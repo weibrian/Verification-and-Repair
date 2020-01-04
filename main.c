@@ -12,10 +12,16 @@ int main() {
     dfa_t pattern_dfa;
     bool pattern_finals[3] = {false, false, false};
     int p_symbs[2] = {66, 77};
-    int p_trans[3][2] = {{1,-1},{2,0},{-1,1}};
+//    int p_trans[3][2] = {{1,-1},{2,0},{-1,1}};
+    int p_trans[3][2] = {{1,1},{2,2},{-1,-1}};
     DFA_new(&pattern_dfa, 3, 2, 0, pattern_finals, p_symbs, p_trans);
     printf("DFA initialization complete.\n");
 
-    DFA_find_pattern(&main_dfa, &pattern_dfa);
+    int *matching = DFA_find_pattern(&main_dfa, &pattern_dfa);
+    if (matching != NULL) {
+        array_print(matching, 1, 3);
+    } else {
+        printf("No matching found\n");
+    }
     return 0;
 }
