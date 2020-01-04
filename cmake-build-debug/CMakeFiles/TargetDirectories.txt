@@ -1,0 +1,3 @@
+/Users/bwei/CLionProjects/Verif/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/bwei/CLionProjects/Verif/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/bwei/CLionProjects/Verif/cmake-build-debug/CMakeFiles/Verif.dir
