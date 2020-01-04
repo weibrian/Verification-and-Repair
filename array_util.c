@@ -23,6 +23,7 @@ bool array_contains_duplicates(const int *array, int length) {
 
 
 void array_print(const int *array, int rows, int cols) {
+
     for(int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             printf("%d ", array[i * cols + j]);

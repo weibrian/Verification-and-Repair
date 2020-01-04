@@ -7,7 +7,6 @@
 #include "inc/array_util.h"
 
 static int get_next_permutation(int *current_permutation, int length, int max_value);
-static int set_valid_symbols(dfa_t *dfa, int *valid_symbol_indices, int *matching, int matching_len);
 
 /** @brief Constructs a new DFA
  *
@@ -42,6 +41,7 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
     dfa->final_states = calloc(num_states, sizeof(bool));
     dfa->transition_matrix = calloc(num_states * alphabet_size, sizeof(int));
     dfa->alphabet_symbols = calloc(alphabet_size, sizeof(int));
+
     if (dfa->final_states == NULL || dfa->transition_matrix == NULL || dfa->alphabet_symbols == NULL) {
         goto failure;
     }
@@ -56,9 +56,11 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
             if (target_state >= num_states) {
                 goto failure;
             }
-            dfa->transition_matrix[state * num_states + letter] = target_state;
+            dfa->transition_matrix[state * alphabet_size + letter] = target_state;
         }
     }
+    array_print(dfa->transition_matrix, 4, 2);
+    return 0;
 
     failure:
         free(dfa->final_states);
@@ -115,7 +117,7 @@ int *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
     }
     int pattern_states = pattern->num_states;
     int main_states = main_dfa->num_states;
-
+    int main_alphabet_size = main_dfa->alphabet_size;
     if (pattern_states > main_states) {
         return NULL;
     }
@@ -125,59 +127,23 @@ int *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
     while(get_next_permutation(matching, pattern_states, main_states - 1) == 0) {
         array_print(matching, 1, pattern_states);
 
-        int valid_symbol_indices[main_dfa->alphabet_size];
-        memset(valid_symbol_indices, 0, main_dfa->alphabet_size * sizeof(int));
-        int potential_symbols = set_valid_symbols(main_dfa, valid_symbol_indices, matching, pattern_states);
-        if (potential_symbols < pattern->alphabet_size) {
-            continue;
-        }
+        int reduced_symbol_table[main_alphabet_size][pattern_states];
 
-        int reduced_symbol_table[potential_symbols][pattern_states];
-        for (int i = 0; i < potential_symbols; i++) {
+        for (int i = 0; i < main_alphabet_size; i++) {
             for(int j = 0; j < pattern_states; j++) {
-                int old_index = matching[j] * main_dfa->alphabet_size
-                                + array_index_of(valid_symbol_indices, 1, main_dfa->alphabet_size, j);
-                int old_transition = main_dfa->transition_matrix[old_index];
-                int new_mapping = array_index_of(matching, old_transition, pattern_states, 1);
-                reduced_symbol_table[i][j] = new_mapping;
+                int index, dest = (main_dfa->transition_matrix)[matching[j] * main_alphabet_size + i];
+                if ((index = array_index_of(matching, dest, pattern_states, 1)) >= 0) {
+                    reduced_symbol_table[i][j] = index;
+                } else {
+                    reduced_symbol_table[i][j] = -1;
+                }
             }
         }
-        printf("%d; %d\n", potential_symbols, pattern_states);
+        printf("%d; %d\n", main_alphabet_size, pattern_states);
+        array_print((const int *)reduced_symbol_table, main_alphabet_size, pattern_states);
         break;
-        //array_print((const int *)reduced_symbol_table, potential_symbols, pattern_states);
     }
     return NULL;
-}
-
-/** @brief Determines the potential symbols to for the given permutation
- *
- * Sets the values in the valid_symbol_indices array to true for symbols that are potentially
- * valid based on the matching and the dfa; returns the number of such symbols
- *
- * @param dfa
- * @param valid_symbol_indices
- * @param matching
- * @param matching_len
- * @return The number of potential symbols
- */
-static int set_valid_symbols(dfa_t *dfa, int *valid_symbol_indices, int *matching, int matching_len) {
-    int potential_symbol_count = 0;
-    for (int symbol_ind = 0; symbol_ind < dfa->alphabet_size; symbol_ind++) {
-        bool flag = true;
-
-        for (int state_ind = 0; state_ind < matching_len; state_ind++) {
-            int dest = dfa->transition_matrix[state_ind * dfa->alphabet_size + symbol_ind];
-            if (!array_contains(matching, dest, matching_len) && dest >= 0) {
-                flag = false;
-                break;
-            }
-        }
-        if (flag) {
-            valid_symbol_indices[symbol_ind] = true;
-            potential_symbol_count++;
-        }
-    }
-    return potential_symbol_count;
 }
 
 /** @brief Sets the current_permutation array to the next permutation

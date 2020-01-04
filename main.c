@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "inc/DFA.h"
+#include "inc/array_util.h"
 
 int main() {
     dfa_t main_dfa;
