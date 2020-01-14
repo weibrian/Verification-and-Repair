@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "examples.h"
+#include "inc/examples.h"
 
 int ex_cycle(dfa_t *dfa, int size) {
     int output = -1;

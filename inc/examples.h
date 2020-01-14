@@ -8,11 +8,19 @@
 #ifndef __VERIF_EXAMPLES_H__
 #define __VERIF_EXAMPLES_H__
 
-#include "inc/DFA.h"
+#include "DFA.h"
 
 /* State Machines */
 
 /** @brief Generates a cycles of two symbols with transitions in opposite directions
+ *
+ *   e.g. size = 4
+ *
+ *      +---+           +---+           +---+           +---+
+ *      | 0 |-(a->,b<-)-| 1 |-(a->,b<-)-| 2 |-(a->,b<-)-| 3 |
+ *      +---+           +---+           +---+           +---+
+ *        |                                               |
+ *        +-----------------(a<-)---(b->)-----------------+
  *
  *  @param dfa DFA to load into
  *  @param size Number of states
@@ -21,6 +29,23 @@
 int ex_cycle(dfa_t *dfa, int size);
 
 /** @brief Generates a simple six state DFA
+ *
+ *        +---+
+ *        | 0 |--a,b->-+
+ *        +---+        |
+ *                     |
+ *       +---+       +---+       +---+
+ *     +-| 2 |--<-a--| 1 |--b->--| 3 |--a->-+
+ *     | +---+       +---+       +---+      |
+ *     |   |                       |        |
+ *     |   |         +---+         |  +-----+
+ *     |   +----a->--| 4 |--<-b----+  |
+ *     |             +---+            |
+ *     |               |              |       +--a,b->--+
+ *     |              a,b             |       |         |
+ *     |               |              |     +---+       |
+ *     +--------b->----+------>-------+-->--| 5 |--<----+
+ *                                          +---+
  *
  * @param dfa DFA to load into
  * @return 0 on success, negative error code on failure

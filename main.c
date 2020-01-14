@@ -4,7 +4,7 @@
 
 #include "inc/DFA.h"
 #include "inc/array_util.h"
-#include "examples.h"
+#include "inc/examples.h"
 
 int main() {
     dfa_t main_dfa, pattern;
