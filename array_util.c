@@ -22,13 +22,13 @@ bool array_contains_duplicates(const int *array, int length) {
 }
 
 
-void array_print(const int *array, int rows, int cols) {
+void array_print(const int *array, int rows, int cols, FILE *f) {
 
     for(int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            printf("%d ", array[i * cols + j]);
+            fprintf(f, "%d ", array[i * cols + j]);
         }
-        printf("\n");
+        fprintf(f, "\n");
     }
 }
 

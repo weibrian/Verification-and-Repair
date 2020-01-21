@@ -89,4 +89,4 @@ int ex_twoway(dfa_t *dfa);
  */
 int ex_sink(dfa_t *dfa);
 
-#endif /* VERIF_EXAMPLES_H */
+#endif /* __VERIF_EXAMPLES_H__ */
