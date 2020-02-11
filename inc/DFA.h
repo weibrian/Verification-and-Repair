@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define DFA_NO_ERROR            (0)
 #define DFA_INVALID_SYMBOL      (-1)
 #define DFA_INVALID_ARG         (-2)
 #define DFA_MEMORY_ERROR        (-3)
@@ -121,5 +122,16 @@ void DFA_print(dfa_t *dfa, FILE *f);
  * @param pattern Pattern to free
  */
 void DFA_free_pattern(pattern_output_t *pattern);
+
+
+/** @brief Takes the parallel composition of two dfa's
+ *
+ * @param dest DFA where we will put the outcome
+ * @param dfa_1 First input DFA
+ * @param dfa_2 Second input DFA
+ * @return 0 on success, negative error code on failure
+ */
+int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2);
+
 
 #endif /* __VERIF_DFA_H__ */

@@ -212,6 +212,59 @@ int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) 
     return 0;
 }
 
+int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
+    if (dest == NULL || dfa_1 == NULL || dfa_2 == NULL) {
+        return DFA_INVALID_ARG;
+    }
+    int err;
+
+    int num_states_1 = dfa_1->num_states;
+    int num_states_2 = dfa_2->num_states;
+    int new_num_states = num_states_1 * num_states_2;
+    int alphabet_size_1 = dfa_1->alphabet_size;
+    int alphabet_size_2 = dfa_2->alphabet_size;
+    int new_alph_size = alphabet_size_1 +  alphabet_size_2;
+
+    int *new_alphabet_symbols = NULL, *new_transition_matrix = NULL;
+    bool *new_final_states = NULL;
+
+    new_alphabet_symbols = malloc(new_alph_size * sizeof(int));
+    new_alph_size = array_union(dfa_1->alphabet_symbols, alphabet_size_1,
+            dfa_2->alphabet_symbols, alphabet_size_2,
+            new_alphabet_symbols);
+    new_alphabet_symbols = realloc(new_alphabet_symbols, new_alph_size * sizeof(int));
+    new_final_states = malloc(new_num_states * sizeof(bool));
+    new_transition_matrix = malloc(new_num_states * new_alph_size * sizeof(int));
+
+    if (new_alphabet_symbols == NULL
+        || new_final_states == NULL
+        || new_transition_matrix == NULL) {
+        err = DFA_MEMORY_ERROR;
+        goto failure;
+    }
+    for(int s1 = 0; s1 < num_states_1; s1++) {
+        for(int s2 = 0; s2 < num_states_2; s2++) {
+            for(int symb_ind = 0; symb_ind < new_alph_size; symb_ind++) {
+                int s_ind1 = get_symbol_index(dfa_1, new_alphabet_symbols[symb_ind]);
+                int s_ind2 = get_symbol_index(dfa_2, new_alphabet_symbols[symb_ind]);
+                int M1_target = s_ind1 == DFA_INVALID_SYMBOL ? s1 : dfa_1->transition_matrix[s1 * alphabet_size_1 + s_ind1];
+                int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2->transition_matrix[s2 * alphabet_size_2 + s_ind2];
+                new_transition_matrix[(s1 * num_states_1 + s2) * new_alph_size + symb_ind] =
+                        (M1_target == -1 || M2_target == -1) ? -1 : M1_target * num_states_1 + M2_target;
+            }
+        }
+    }
+
+    err = DFA_new(dest, new_num_states, new_alph_size, 0,
+                new_final_states, new_alphabet_symbols,
+                new_transition_matrix);
+    failure:
+    free(new_alphabet_symbols);
+    free(new_final_states);
+    free(new_transition_matrix);
+    return err;
+}
+
 void DFA_free_pattern(pattern_output_t *pattern) {
     if (pattern == NULL) {
         return;
@@ -222,17 +275,18 @@ void DFA_free_pattern(pattern_output_t *pattern) {
 }
 
 void DFA_print(dfa_t *dfa, FILE *f) {
-   fprintf(f, "Initial state: %d\n", dfa->initial_state);
-   fprintf(f, "Final state(s): ");
-   for(int i = 0; i < dfa->num_states; i++) {
-       if (dfa->final_states[i]) fprintf(f, "%d ", i);
-   }
-   fprintf(f, "\nAlphabet Symbol(s): ");
-   for(int i = 0; i < dfa->alphabet_size; i++) {
-       fprintf(f, "%d ", dfa->alphabet_symbols[i]);
-   }
-   fprintf(f, "\nTransition Matrix:\n");
-   array_print(dfa->transition_matrix, dfa->num_states, dfa->alphabet_size, f);
+    fprintf(f, "Num states: %d; Alphabet size %d\n", dfa->num_states, dfa->alphabet_size);
+    fprintf(f, "Initial state: %d\n", dfa->initial_state);
+    fprintf(f, "Final state(s): ");
+    for(int i = 0; i < dfa->num_states; i++) {
+        if (dfa->final_states[i]) fprintf(f, "%d ", i);
+    }
+    fprintf(f, "\nAlphabet Symbol(s): ");
+    for(int i = 0; i < dfa->alphabet_size; i++) {
+        fprintf(f, "%d ", dfa->alphabet_symbols[i]);
+    }
+    fprintf(f, "\nTransition Matrix:\n");
+    array_print(dfa->transition_matrix, dfa->num_states, dfa->alphabet_size, f);
 }
 
 static int get_next_permutation(int *current_permutation, int length, int max_value) {
