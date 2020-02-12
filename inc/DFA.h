@@ -21,28 +21,29 @@ extern "C" {
 #include <stdio.h>
 
 #define DFA_NO_ERROR            (0)
-#define DFA_INVALID_SYMBOL      (-1)
+#define DFA_DUMMY_SYMBOL        (-1)
 #define DFA_INVALID_ARG         (-2)
 #define DFA_MEMORY_ERROR        (-3)
 #define DFA_PATTERN_NOT_FOUND   (-4)
 #define DFA_NOT_YET_IMPL        (-5)
+#define DFA_INVALID_SYMBOL      (-6)
 
 /* Structure for a DFA; transition matrix is structured as:
- *                  symbol
- * Starting state   42   99
- *             0    0    -1
- *             1    1    0
- *  where the destination is in the cells of the array, -1 indicates that
- *  the transition does noe exist.  Symbols 42 and 99 are specified in the
- *  alphabet symbols array which must be in this case {42, 99}
- *  */
+*                  symbol
+* Starting state   42   99
+*             0    0    -1
+*             1    1    0
+*  where the destination is in the cells of the array, -1 indicates that
+*  the transition does noe exist.  Symbols 42 and 99 are specified in the
+*  alphabet symbols array which must be in this case {42, 99}
+*  */
 typedef struct dfa {
-  int num_states;           /* Number of states */
-  int initial_state;        /* Initial state    */
-  bool *final_states;       /* Accepting states */
-  int alphabet_size;        /* Size of alphabet */
-  int *alphabet_symbols;    /* Symbols in the alphabet  */
-  int *transition_matrix;   /* Transition matrix of num_states * alphabet_size
+    int num_states;           /* Number of states */
+    int initial_state;        /* Initial state    */
+    bool *final_states;       /* Accepting states */
+    int alphabet_size;        /* Size of alphabet */
+    int *alphabet_symbols;    /* Symbols in the alphabet  */
+    int *transition_matrix;   /* Transition matrix of num_states * alphabet_size
                              * where tm[i][j] is the destination from state i
                              * on transition alphabet_symbols[j] */
 } dfa_t;
@@ -146,6 +147,8 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2);
  */
 int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol);
 
+
+int DFA_clone(dfa_t *source, dfa_t *target);
 
 #endif /* __VERIF_DFA_H__ */
 

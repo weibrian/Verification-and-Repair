@@ -142,7 +142,7 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
                 if ((index = array_index_of(matching, dest, pattern_states, 1)) >= 0) {
                     reduced_symbol_table[i][j] = index;
                 } else {
-                    reduced_symbol_table[i][j] = -1;
+                    reduced_symbol_table[i][j] = DFA_DUMMY_SYMBOL;
                 }
             }
         }
@@ -204,7 +204,7 @@ int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) 
             }
             int target = target_pattern->transition_matrix[state_no * pattern_alphabet + symbol_no];
             main_dfa->transition_matrix[state * main_alphabet + symbol_ind] =
-                    target == -1 ? -1 : pattern->states[target];
+                    target == DFA_DUMMY_SYMBOL ? DFA_DUMMY_SYMBOL : pattern->states[target];
         }
     }
 
@@ -250,7 +250,8 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
                 int M1_target = s_ind1 == DFA_INVALID_SYMBOL ? s1 : dfa_1->transition_matrix[s1 * alphabet_size_1 + s_ind1];
                 int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2->transition_matrix[s2 * alphabet_size_2 + s_ind2];
                 new_transition_matrix[(s1 * num_states_1 + s2) * new_alph_size + symb_ind] =
-                        (M1_target == -1 || M2_target == -1) ? -1 : M1_target * num_states_1 + M2_target;
+                        (M1_target == DFA_DUMMY_SYMBOL || M2_target == DFA_DUMMY_SYMBOL) ?
+                            DFA_DUMMY_SYMBOL : M1_target * num_states_1 + M2_target;
             }
             if (dfa_1->final_states[s1] && dfa_2->final_states[s2]) {
                 new_final_states[s1 * num_states_1 + s2] = true;
@@ -303,6 +304,23 @@ int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol) {
     }
     return dfa->transition_matrix[current_state * dfa->alphabet_size + symbol_index];
 }
+
+
+int DFA_clone(dfa_t *source, dfa_t *target) {
+    target->num_states = source->num_states;
+    target->initial_state = source->initial_state;
+    target->alphabet_size = source->alphabet_size;
+    target->final_states = malloc(source->num_states * sizeof(bool));
+    memcpy(target->final_states, source->final_states, source->num_states * sizeof(bool));
+    target->alphabet_symbols = malloc(source->alphabet_size * sizeof(int));
+    memcpy(target->alphabet_symbols, source->alphabet_symbols, source->alphabet_size * sizeof(int));
+    target->transition_matrix = malloc((source->num_states * source->alphabet_size) * sizeof(int));
+    memcpy(target->transition_matrix, source->transition_matrix, (source->num_states * source->alphabet_size) * sizeof(int));
+    return 0;
+}
+
+
+
 
 static int get_next_permutation(int *current_permutation, int length, int max_value) {
     assert(current_permutation != NULL);

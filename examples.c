@@ -42,7 +42,7 @@ int ex_cdm(dfa_t *dfa) {
     }
     bool finals[6];
     memset(finals, 0, 6 * sizeof(bool));
-    int transitions[6][2] = { {1,1}, {2,3}, {4,5}, {5,4}, {5,5}, {-1,-1} };
+    int transitions[6][2] = { {1,1}, {2,3}, {4,5}, {5,4}, {5,5}, {DFA_DUMMY_SYMBOL,DFA_DUMMY_SYMBOL} };
     int *trans = malloc(12 * sizeof(int));
     if (trans == NULL) {
         return -1;
@@ -65,7 +65,7 @@ int ex_linear(dfa_t *dfa) {
     const int NUM_STATES = 3;
     bool finals[NUM_STATES];
     memset(finals, 0, NUM_STATES * sizeof(bool));
-    int transitions[NUM_STATES][2] = { {1,1}, {2,2}, {-1,-1} };
+    int transitions[NUM_STATES][2] = { {1,1}, {2,2}, {DFA_DUMMY_SYMBOL,DFA_DUMMY_SYMBOL} };
     int *trans = malloc(2 * NUM_STATES * sizeof(int));
     if (trans == NULL) {
         return -1;
@@ -85,7 +85,7 @@ int ex_twoway(dfa_t *dfa) {
     const int NUM_STATES = 3;
     bool finals[NUM_STATES];
     memset(finals, 0, NUM_STATES * sizeof(bool));
-    int transitions[NUM_STATES][2] = { {1,-1}, {2,0}, {-1,1} };
+    int transitions[NUM_STATES][2] = { {1,DFA_DUMMY_SYMBOL}, {2,0}, {DFA_DUMMY_SYMBOL,1} };
     int *trans = malloc(2 * NUM_STATES * sizeof(int));
     if (trans == NULL) {
         return -1;
@@ -105,7 +105,7 @@ int ex_sink(dfa_t *dfa) {
     const int NUM_STATES = 3;
     bool finals[NUM_STATES];
     memset(finals, 0, NUM_STATES * sizeof(bool));
-    int transitions[NUM_STATES][2] = { {1,2}, {2,2}, {-1,-1} };
+    int transitions[NUM_STATES][2] = { {1,2}, {2,2}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL} };
     int *trans = malloc(2 * NUM_STATES * sizeof(int));
     if (trans == NULL) {
         return -1;
@@ -114,6 +114,50 @@ int ex_sink(dfa_t *dfa) {
     memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
     int symbols[2] = {67, 68};
     int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+
+    free(trans);
+    return out;
+}
+
+
+int ex_fancy(dfa_t *dfa) {
+    if (dfa == NULL) {
+        return -1;
+    }
+    const int NUM_STATES = 3;
+    bool finals[NUM_STATES];
+    memset(finals, 0, NUM_STATES * sizeof(bool));
+    int transitions[NUM_STATES][2] = { {1,2}, {2,2}, {0,0} };
+    int *trans = malloc(2 * NUM_STATES * sizeof(int));
+    if (trans == NULL) {
+        return -1;
+    }
+
+    memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
+    int symbols[2] = {67, 68};
+    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+
+    free(trans);
+    return out;
+}
+
+
+int prop_five(dfa_t *dfa) {
+    if (dfa == NULL) {
+        return -1;
+    }
+    const int NUM_STATES = 6;
+    bool finals[NUM_STATES];
+    memset(finals, 0, NUM_STATES * sizeof(bool));
+    int transitions[NUM_STATES][1] = { {1}, {2}, {3}, {4}, {5}, {DFA_DUMMY_SYMBOL} };
+    int *trans = malloc(NUM_STATES * sizeof(int));
+    if (trans == NULL) {
+        return -1;
+    }
+
+    memcpy(trans, transitions, NUM_STATES * sizeof(int));
+    int symbols[1] = {44};
+    int out = DFA_new(dfa, NUM_STATES, 1, 0, finals, symbols, trans);
 
     free(trans);
     return out;

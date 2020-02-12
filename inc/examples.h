@@ -93,7 +93,9 @@ int ex_twoway(dfa_t *dfa);
  */
 int ex_sink(dfa_t *dfa);
 
+int prop_five(dfa_t *dfa);
 
+int ex_fancy(dfa_t *dfa);
 
 #endif /* __VERIF_EXAMPLES_H__ */
 
