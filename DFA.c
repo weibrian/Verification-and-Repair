@@ -233,7 +233,7 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
             dfa_2->alphabet_symbols, alphabet_size_2,
             new_alphabet_symbols);
     new_alphabet_symbols = realloc(new_alphabet_symbols, new_alph_size * sizeof(int));
-    new_final_states = malloc(new_num_states * sizeof(bool));
+    new_final_states = calloc(new_num_states, sizeof(bool)); // initialise as false
     new_transition_matrix = malloc(new_num_states * new_alph_size * sizeof(int));
 
     if (new_alphabet_symbols == NULL
@@ -251,6 +251,9 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
                 int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2->transition_matrix[s2 * alphabet_size_2 + s_ind2];
                 new_transition_matrix[(s1 * num_states_1 + s2) * new_alph_size + symb_ind] =
                         (M1_target == -1 || M2_target == -1) ? -1 : M1_target * num_states_1 + M2_target;
+            }
+            if (dfa_1->final_states[s1] && dfa_2->final_states[s2]) {
+                new_final_states[s1 * num_states_1 + s2] = true;
             }
         }
     }

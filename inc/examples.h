@@ -5,6 +5,10 @@
  *  Various examples of Finite State Machines and patterns for
  *  demonstrative and testing purposes
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef __VERIF_EXAMPLES_H__
 #define __VERIF_EXAMPLES_H__
 
@@ -89,4 +93,10 @@ int ex_twoway(dfa_t *dfa);
  */
 int ex_sink(dfa_t *dfa);
 
+
+
 #endif /* __VERIF_EXAMPLES_H__ */
+
+#ifdef __cplusplus
+}
+#endif

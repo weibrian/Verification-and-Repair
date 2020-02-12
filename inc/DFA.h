@@ -10,6 +10,9 @@
  *  all permutations of states in the DFA to see if there are any suitable in being
  *  a match to the pattern state machine.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef __VERIF_DFA_H__
 #define __VERIF_DFA_H__
@@ -135,3 +138,7 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2);
 
 
 #endif /* __VERIF_DFA_H__ */
+
+#ifdef __cplusplus
+}
+#endif

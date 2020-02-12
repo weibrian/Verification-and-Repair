@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
-project(Verif C)
+project(Verif CXX C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 11)
 
-add_executable(Verif main.c DFA.c inc/DFA.h inc/array_util.h inc/array_util.h array_util.c examples.c inc/examples.h)
+add_executable(Verif main.cpp DFA.c inc/DFA.h inc/array_util.h inc/array_util.h
+        array_util.c examples.c inc/examples.h Property.cpp inc/Property.h)
