@@ -137,6 +137,16 @@ void DFA_free_pattern(pattern_output_t *pattern);
 int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2);
 
 
+/** @brief Applies a symbol to a DFA from a given state
+ *
+ * @param dfa DFA to use
+ * @param current_state state on which to execute
+ * @param symbol Symbol to use in execution
+ * @return destination state or negative error code on error
+ */
+int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol);
+
+
 #endif /* __VERIF_DFA_H__ */
 
 #ifdef __cplusplus

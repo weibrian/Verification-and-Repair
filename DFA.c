@@ -292,6 +292,18 @@ void DFA_print(dfa_t *dfa, FILE *f) {
     array_print(dfa->transition_matrix, dfa->num_states, dfa->alphabet_size, f);
 }
 
+
+int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol) {
+    if (dfa == NULL || current_state >= dfa->num_states) {
+        return DFA_INVALID_ARG;
+    }
+    int symbol_index;
+    if ((symbol_index = get_symbol_index(dfa, symbol)) < 0) {
+        return DFA_INVALID_SYMBOL;
+    }
+    return dfa->transition_matrix[current_state * dfa->alphabet_size + symbol_index];
+}
+
 static int get_next_permutation(int *current_permutation, int length, int max_value) {
     assert(current_permutation != NULL);
 
