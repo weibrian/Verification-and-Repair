@@ -5,11 +5,11 @@
  *  Detailed documentation may be found in the header file DFA.h
  */
 
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
+#include <cstdio>
+#include <iostream>
 #include "inc/DFA.h"
 #include "inc/array_util.h"
 
@@ -32,7 +32,7 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
         const bool *finals, const int *symbols,
         const int *transition_matrix) {
     int error_code;
-    if (dfa == NULL) {
+    if (dfa == nullptr) {
         return DFA_INVALID_ARG;
     }
 
@@ -44,15 +44,15 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
         return DFA_INVALID_ARG;
     }
 
-    dfa->final_states = NULL;
-    dfa->transition_matrix = NULL;
-    dfa->alphabet_symbols = NULL;
+    dfa->final_states = nullptr;
+    dfa->transition_matrix = nullptr;
+    dfa->alphabet_symbols = nullptr;
 
-    dfa->final_states = calloc(num_states, sizeof(bool));
-    dfa->transition_matrix = calloc(num_states * alphabet_size, sizeof(int));
-    dfa->alphabet_symbols = calloc(alphabet_size, sizeof(int));
+    dfa->final_states = (bool*)calloc(num_states, sizeof(bool));
+    dfa->transition_matrix = (int*)calloc(num_states * alphabet_size, sizeof(int));
+    dfa->alphabet_symbols = (int*)calloc(alphabet_size, sizeof(int));
 
-    if (dfa->final_states == NULL || dfa->transition_matrix == NULL || dfa->alphabet_symbols == NULL) {
+    if (dfa->final_states == nullptr || dfa->transition_matrix == nullptr || dfa->alphabet_symbols == nullptr) {
         error_code = DFA_MEMORY_ERROR;
         goto failure;
     }
@@ -81,14 +81,14 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
 }
 
 int get_symbol_index(dfa_t *dfa, int symbol) {
-    assert(dfa != NULL);
+    assert(dfa != nullptr);
     int result = array_index_of(dfa->alphabet_symbols, symbol, dfa->alphabet_size, 1);
     return result < 0 ? DFA_INVALID_SYMBOL : result;
 }
 
 int DFA_run_trace(dfa_t *dfa, const int *trace, int length) {
 
-    if (dfa == NULL || length < 0) {
+    if (dfa == nullptr || length < 0) {
         return DFA_INVALID_ARG;
     }
 
@@ -111,24 +111,26 @@ int DFA_run_trace(dfa_t *dfa, const int *trace, int length) {
 }
 
 pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
-    int *symbol_permutation = NULL;
-    int *matching = NULL;
+    int *symbol_permutation = nullptr;
+    int *matching = nullptr;
+    int pattern_states, main_states, main_alphabet_size, pattern_alphabet_size;
+    pattern_output_t *output;
 
-    if (main_dfa == NULL || pattern == NULL) {
+    if (main_dfa == nullptr || pattern == nullptr) {
         goto failure;
     }
-    int pattern_states = pattern->num_states;
-    int main_states = main_dfa->num_states;
-    int main_alphabet_size = main_dfa->alphabet_size;
-    int pattern_alphabet_size = pattern->alphabet_size;
+    pattern_states = pattern->num_states;
+    main_states = main_dfa->num_states;
+    main_alphabet_size = main_dfa->alphabet_size;
+    pattern_alphabet_size = pattern->alphabet_size;
 
     if (pattern_states > main_states) {
         goto failure;
     }
 
-    symbol_permutation = calloc(pattern_alphabet_size, sizeof(int));
-    matching = calloc(pattern_states, sizeof(int));
-    if (symbol_permutation == NULL || matching == NULL) {
+    symbol_permutation = (int*)calloc(pattern_alphabet_size, sizeof(int));
+    matching = (int*)calloc(pattern_states, sizeof(int));
+    if (symbol_permutation == nullptr || matching == nullptr) {
         goto failure;
     }
 
@@ -160,8 +162,8 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
             for (int i = 0; i < pattern_alphabet_size; i++) {
                 symbol_permutation[i] = main_dfa->alphabet_symbols[symbol_permutation[i]];
             }
-            pattern_output_t *output = malloc(sizeof(pattern_output_t));
-            if (output == NULL) {
+            output = (pattern_output_t*)malloc(sizeof(pattern_output_t));
+            if (output == nullptr) {
                 goto failure;
             }
             output->states = matching;
@@ -176,11 +178,11 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
     failure:
         free(symbol_permutation);
         free(matching);
-        return NULL;
+        return nullptr;
 }
 
 int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) {
-    if (main_dfa == NULL || original_pattern == NULL || target_pattern == NULL) {
+    if (main_dfa == nullptr || original_pattern == nullptr || target_pattern == nullptr) {
         return DFA_INVALID_ARG;
     }
     if (original_pattern->num_states != target_pattern->num_states ||
@@ -188,7 +190,7 @@ int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) 
         return DFA_NOT_YET_IMPL;
     }
     pattern_output_t *pattern = DFA_find_pattern(main_dfa, original_pattern);
-    if (pattern == NULL) {
+    if (pattern == nullptr) {
         return DFA_PATTERN_NOT_FOUND;
     }
     int pattern_states = original_pattern->num_states;
@@ -213,7 +215,7 @@ int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) 
 }
 
 int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
-    if (dest == NULL || dfa_1 == NULL || dfa_2 == NULL) {
+    if (dest == nullptr || dfa_1 == nullptr || dfa_2 == nullptr) {
         return DFA_INVALID_ARG;
     }
     int err;
@@ -225,20 +227,20 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
     int alphabet_size_2 = dfa_2->alphabet_size;
     int new_alph_size = alphabet_size_1 +  alphabet_size_2;
 
-    int *new_alphabet_symbols = NULL, *new_transition_matrix = NULL;
-    bool *new_final_states = NULL;
+    int *new_alphabet_symbols = nullptr, *new_transition_matrix = nullptr;
+    bool *new_final_states = nullptr;
 
-    new_alphabet_symbols = malloc(new_alph_size * sizeof(int));
+    new_alphabet_symbols = (int*)malloc(new_alph_size * sizeof(int));
     new_alph_size = array_union(dfa_1->alphabet_symbols, alphabet_size_1,
             dfa_2->alphabet_symbols, alphabet_size_2,
             new_alphabet_symbols);
-    new_alphabet_symbols = realloc(new_alphabet_symbols, new_alph_size * sizeof(int));
-    new_final_states = calloc(new_num_states, sizeof(bool)); // initialise as false
-    new_transition_matrix = malloc(new_num_states * new_alph_size * sizeof(int));
+    new_alphabet_symbols = (int*)realloc(new_alphabet_symbols, new_alph_size * sizeof(int));
+    new_final_states = (bool*)calloc(new_num_states, sizeof(bool)); // initialise as false
+    new_transition_matrix = (int*)malloc(new_num_states * new_alph_size * sizeof(int));
 
-    if (new_alphabet_symbols == NULL
-        || new_final_states == NULL
-        || new_transition_matrix == NULL) {
+    if (new_alphabet_symbols == nullptr
+        || new_final_states == nullptr
+        || new_transition_matrix == nullptr) {
         err = DFA_MEMORY_ERROR;
         goto failure;
     }
@@ -270,7 +272,7 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
 }
 
 void DFA_free_pattern(pattern_output_t *pattern) {
-    if (pattern == NULL) {
+    if (pattern == nullptr) {
         return;
     }
     free(pattern->states);
@@ -295,7 +297,7 @@ void DFA_print(dfa_t *dfa, FILE *f) {
 
 
 int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol) {
-    if (dfa == NULL || current_state >= dfa->num_states) {
+    if (dfa == nullptr || current_state >= dfa->num_states) {
         return DFA_INVALID_ARG;
     }
     int symbol_index;
@@ -310,11 +312,11 @@ int DFA_clone(dfa_t *source, dfa_t *target) {
     target->num_states = source->num_states;
     target->initial_state = source->initial_state;
     target->alphabet_size = source->alphabet_size;
-    target->final_states = malloc(source->num_states * sizeof(bool));
+    target->final_states = (bool*)malloc(source->num_states * sizeof(bool));
     memcpy(target->final_states, source->final_states, source->num_states * sizeof(bool));
-    target->alphabet_symbols = malloc(source->alphabet_size * sizeof(int));
+    target->alphabet_symbols = (int*)malloc(source->alphabet_size * sizeof(int));
     memcpy(target->alphabet_symbols, source->alphabet_symbols, source->alphabet_size * sizeof(int));
-    target->transition_matrix = malloc((source->num_states * source->alphabet_size) * sizeof(int));
+    target->transition_matrix = (int*)malloc((source->num_states * source->alphabet_size) * sizeof(int));
     memcpy(target->transition_matrix, source->transition_matrix, (source->num_states * source->alphabet_size) * sizeof(int));
     return 0;
 }
@@ -323,7 +325,7 @@ int DFA_clone(dfa_t *source, dfa_t *target) {
 
 
 static int get_next_permutation(int *current_permutation, int length, int max_value) {
-    assert(current_permutation != NULL);
+    assert(current_permutation != nullptr);
 
     start_of_loop:
     for(int i = length - 1; i >= 0; i--) {

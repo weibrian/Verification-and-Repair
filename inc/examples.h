@@ -97,6 +97,9 @@ int prop_five(dfa_t *dfa);
 
 int ex_fancy(dfa_t *dfa);
 
+int ex_infusion(dfa_t *dfa);
+
+
 #endif /* __VERIF_EXAMPLES_H__ */
 
 #ifdef __cplusplus

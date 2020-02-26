@@ -8,5 +8,10 @@ include_directories(${Boost_INCLUDE_DIR})
 set(CMAKE_CXX_STANDARD 11)
 
 
-add_executable(Verif main.cpp DFA.c inc/DFA.h inc/array_util.h inc/array_util.h
-        array_util.c examples.c inc/examples.h Property.cpp inc/Property.h modify.cpp inc/modify.h)
+add_executable(Verif main.cpp DFA.cpp inc/DFA.h
+        ltsa_parser.cpp inc/ltsa_parser.h
+        array_util.c inc/array_util.h
+        examples.cpp inc/examples.h
+        Property.cpp inc/Property.h
+        modify.cpp inc/modify.h
+        )

@@ -39,7 +39,6 @@ int modify_violate_property(dfa_t *main_dfa, Property *p, mapping_list *maps) {
             DFA_clone(main_dfa_copy, main_dfa);
             return MODIFY_SUCCESSFUL;
         }
-
     }
     free(main_dfa_copy);
     return MODIFY_NOT_FOUND;

@@ -8,7 +8,7 @@
 
 int main() {
     dfa_t main_dfa, prop, pattern_sink, pattern_linear, pattern_fancy;
-    if(ex_cdm(&main_dfa)
+    if(ex_infusion(&main_dfa)
         || prop_five(&prop)
         || ex_sink(&pattern_sink)
         || ex_linear(&pattern_linear)
