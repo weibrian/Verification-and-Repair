@@ -242,14 +242,13 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
     std::set<std::string> tmp_set;
     tmp_set.insert(dfa_1->alphabet_symbols->begin(), dfa_1->alphabet_symbols->end());
     tmp_set.insert(dfa_2->alphabet_symbols->begin(), dfa_2->alphabet_symbols->end());
-    std::vector<std::string> *new_alphabet_symbols = new std::vector<std::string>(tmp_set.begin(), tmp_set.end());
+    auto *new_alphabet_symbols = new std::vector<std::string>(tmp_set.begin(), tmp_set.end());
     int new_alph_size = new_alphabet_symbols->size();
 
     new_final_states = (bool*)calloc(new_num_states, sizeof(bool)); // initialise as false
     new_transition_matrix = (int*)malloc(new_num_states * new_alph_size * sizeof(int));
 
-    if (new_alphabet_symbols == nullptr
-        || new_final_states == nullptr
+    if (new_final_states == nullptr
         || new_transition_matrix == nullptr) {
         err = DFA_MEMORY_ERROR;
         goto failure;

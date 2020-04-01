@@ -5,6 +5,7 @@
 #include "inc/examples.h"
 #include "inc/Property.h"
 #include "inc/modify.h"
+#include "inc/pattern_lib.h"
 
 int main() {
     dfa_t main_dfa, machine_dfa, prop, pattern_sink, pattern_linear, pattern_fancy, human_dfa;
@@ -52,8 +53,9 @@ int main() {
     std::flush(std::cout);
 
     mapping_list mappings = modify_new_mapping();
-    modify_add_to_mappings(mappings, modify_new_pattern_map(&pattern_sink, &pattern_linear));
-    modify_add_to_mappings(mappings, modify_new_pattern_map(&pattern_sink, &pattern_fancy));
+    patternlib_init(mappings);
+//    modify_add_to_mappings(mappings, modify_new_pattern_map(&pattern_sink, &pattern_linear));
+//    modify_add_to_mappings(mappings, modify_new_pattern_map(&pattern_sink, &pattern_fancy));
 
     int res = modify_violate_property(&main_dfa, &p, &mappings);
     if (res == MODIFY_SUCCESSFUL) {

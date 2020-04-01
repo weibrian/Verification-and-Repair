@@ -25,15 +25,18 @@ void modify_add_to_mappings(mapping_list &current_map, pattern_map_t *next) {
 int modify_violate_property(dfa_t *main_dfa, Property *p, mapping_list *maps) {
 
 //    assert(p->property_check(main_dfa));
-
     auto *main_dfa_copy = (dfa_t*)malloc(sizeof(dfa_t));
     if (main_dfa_copy == nullptr)  {
         return MODIFY_INVALID_ARG;
     }
-
+    int err_flag;
     for(auto const& map: *maps) {
+        std::cout << "trying a map" << std::endl;
+        std::flush(std::cout);
         DFA_clone(main_dfa, main_dfa_copy);
-        if (DFA_modify(main_dfa_copy, map->initial, map->target) < 0) {
+        if ((err_flag = DFA_modify(main_dfa_copy, map->initial, map->target)) < 0) {
+            std::cout << "modification failed with code " << err_flag << std::endl;
+            std::flush(std::cout);
             continue;
         } else if (!(p->property_check(main_dfa_copy))) {
             DFA_clone(main_dfa_copy, main_dfa);

@@ -5,8 +5,8 @@
  *  Detailed documentation may be found in the header file examples.h
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include "inc/examples.h"
 #include "inc/ltsa_parser.h"

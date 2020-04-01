@@ -14,4 +14,4 @@ add_executable(Verif main.cpp DFA.cpp inc/DFA.h
         examples.cpp inc/examples.h
         Property.cpp inc/Property.h
         modify.cpp inc/modify.h
-        )
+        pattern_lib.cpp inc/pattern_lib.h)
