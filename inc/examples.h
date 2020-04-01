@@ -5,10 +5,6 @@
  *  Various examples of Finite State Machines and patterns for
  *  demonstrative and testing purposes
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef __VERIF_EXAMPLES_H__
 #define __VERIF_EXAMPLES_H__
 
@@ -99,9 +95,8 @@ int ex_fancy(dfa_t *dfa);
 
 int ex_infusion(dfa_t *dfa);
 
+int ex_human(dfa_t *dfa);
+
+int ex_prop(dfa_t *dfa);
 
 #endif /* __VERIF_EXAMPLES_H__ */
-
-#ifdef __cplusplus
-}
-#endif

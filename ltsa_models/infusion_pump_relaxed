@@ -1,0 +1,37 @@
+Process:
+	MACHINE
+States:
+	8
+Transitions:
+	MACHINE = Q0,
+	Q0	= (action_plug -> Q1),
+	Q1	= (action_unplug -> Q0
+		  |button_power -> Q2),
+	Q2	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |{action_wait_one, button_clear, button_confirm, button_run} -> Q2
+		  |{button_alarm, button_settings} -> Q3),
+	Q3	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |{button_confirm, button_run} -> Q2
+		  |{action_wait_one, button_clear} -> Q3
+		  |button_value -> Q4),
+	Q4	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |button_clear -> Q3
+		  |action_wait_one -> Q4
+		  |button_value -> Q5
+		  |{button_confirm, button_run} -> Q7),
+	Q5	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |{button_clear, button_value} -> Q3
+		  |action_wait_one -> Q5
+		  |{button_confirm, button_run} -> Q6),
+	Q6	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |{button_alarm, button_settings} -> Q5
+		  |{action_wait_one, button_clear, button_confirm, button_run} -> Q6),
+	Q7	= (action_unplug -> Q0
+		  |button_power -> Q1
+		  |{button_alarm, button_settings} -> Q4
+		  |{action_wait_one, button_clear, button_confirm, button_run} -> Q7).

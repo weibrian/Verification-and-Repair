@@ -10,15 +10,11 @@
  *  all permutations of states in the DFA to see if there are any suitable in being
  *  a match to the pattern state machine.
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef __VERIF_DFA_H__
 #define __VERIF_DFA_H__
 
-#include <stdbool.h>
-#include <stdio.h>
+#include <string>
+#include <vector>
 
 #define DFA_NO_ERROR            (0)
 #define DFA_DUMMY_SYMBOL        (-1)
@@ -42,7 +38,7 @@ typedef struct dfa {
     int initial_state;        /* Initial state    */
     bool *final_states;       /* Accepting states */
     int alphabet_size;        /* Size of alphabet */
-    int *alphabet_symbols;    /* Symbols in the alphabet  */
+    std::vector<std::string> *alphabet_symbols;    /* Symbols in the alphabet  */
     int *transition_matrix;   /* Transition matrix of num_states * alphabet_size
                              * where tm[i][j] is the destination from state i
                              * on transition alphabet_symbols[j] */
@@ -51,7 +47,7 @@ typedef struct dfa {
 /* Output for when a pattern is identified within a DFA */
 typedef struct pattern_output {
     int *states;            /* States in the DFA  */
-    int *symbols;           /* Symbols of the DFA */
+    std::vector<std::string> *symbols;           /* Symbols of the DFA */
 } pattern_output_t;
 
 
@@ -65,7 +61,7 @@ typedef struct pattern_output {
  * @return zero on success, negative error code on failure
  */
 int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
-            const bool *finals, const int *symbols,
+            const bool *finals, const std::vector<std::string>& symbols,
             const int *transition_matrix);
 
 
@@ -75,7 +71,7 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
  * @param symbol Symbol to look for
  * @return Index in the alphabet_symbols array of the symbol or a negative error code if not found
  */
-int get_symbol_index(dfa_t *dfa, int symbol);
+int get_symbol_index(dfa_t *dfa, const std::string& symbol);
 
 /** @brief Runs a trace through a DFA
  *
@@ -84,7 +80,7 @@ int get_symbol_index(dfa_t *dfa, int symbol);
  * @param length Length of input trace
  * @return 1 if accept, 0 if reject, negative error code if other failure
  */
-int DFA_run_trace(dfa_t *dfa, const int *trace, int length);
+int DFA_run_trace(dfa_t *dfa, const std::vector<std::string>& trace, int length);
 
 /** @brief Finds a pattern DFA withing a given DFA
  *
@@ -145,13 +141,10 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2);
  * @param symbol Symbol to use in execution
  * @return destination state or negative error code on error
  */
-int DFA_apply_symbol(dfa_t *dfa, int current_state, int symbol);
+int DFA_apply_symbol(dfa_t *dfa, int current_state, const std::string& symbol);
 
 
 int DFA_clone(dfa_t *source, dfa_t *target);
 
 #endif /* __VERIF_DFA_H__ */
 
-#ifdef __cplusplus
-}
-#endif

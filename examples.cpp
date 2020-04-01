@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include "inc/examples.h"
 #include "inc/ltsa_parser.h"
 
@@ -17,7 +18,8 @@ int ex_cycle(dfa_t *dfa, int size) {
     }
     bool *main_finals = nullptr;
     int *transitions = nullptr;
-    int symbols[2] = {44, 55};
+//    int symbols[2] = {44, 55};
+    auto *symbols = new std::vector<std::string>({"A", "B"});
 
     main_finals = (bool*)calloc(size, sizeof(bool));
     transitions = (int*)malloc(size * 2 * sizeof(int));
@@ -28,7 +30,7 @@ int ex_cycle(dfa_t *dfa, int size) {
         transitions[i * 2] = (i + 1) % size;
         transitions[i * 2 + 1] = (i - 1) % size;
     }
-    output = DFA_new(dfa, size, 2, 0, main_finals, symbols, transitions);
+    output = DFA_new(dfa, size, 2, 0, main_finals, *symbols, transitions);
 
     failure:
         free(transitions);
@@ -50,8 +52,9 @@ int ex_cdm(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, 12 * sizeof(int));
-    int symbols[2] = {44, 55};
-    int out = DFA_new(dfa, 6, 2, 0, finals, symbols, trans);
+    auto *symbols = new std::vector<std::string>({"A", "B"});
+
+    int out = DFA_new(dfa, 6, 2, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
@@ -73,8 +76,10 @@ int ex_linear(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
-    int symbols[2] = {67, 68};
-    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+//    int symbols[2] = {67, 68};
+    auto *symbols = new std::vector<std::string>({"A", "B"});
+
+    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
@@ -93,8 +98,10 @@ int ex_twoway(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
-    int symbols[2] = {67, 68};
-    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+//    int symbols[2] = {67, 68};
+    auto *symbols = new std::vector<std::string>({"A", "B"});
+
+    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
@@ -113,8 +120,10 @@ int ex_sink(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
-    int symbols[2] = {67, 68};
-    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+//    int symbols[2] = {67, 68};
+    auto *symbols = new std::vector<std::string>({"A", "B"});
+
+    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
@@ -135,8 +144,10 @@ int ex_fancy(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, 2 * NUM_STATES * sizeof(int));
-    int symbols[2] = {67, 68};
-    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, symbols, trans);
+//    int symbols[2] = {67, 68};
+    auto *symbols = new std::vector<std::string>({"A", "B"});
+
+    int out = DFA_new(dfa, NUM_STATES, 2, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
@@ -157,14 +168,23 @@ int prop_five(dfa_t *dfa) {
     }
 
     memcpy(trans, transitions, NUM_STATES * sizeof(int));
-    int symbols[1] = {44};
-    int out = DFA_new(dfa, NUM_STATES, 1, 0, finals, symbols, trans);
+//    int symbols[1] = {44};
+    auto *symbols = new std::vector<std::string>({"A"});
+
+    int out = DFA_new(dfa, NUM_STATES, 1, 0, finals, *symbols, trans);
 
     free(trans);
     return out;
 }
-int parser_go(dfa_t*, const char *);
 
 int ex_infusion(dfa_t *dfa) {
-    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/infusion_pump_ltsa_out");
+    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_relaxed");
+}
+
+int ex_human(dfa_t *dfa) {
+    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_human");
+}
+
+int ex_prop(dfa_t *dfa) {
+    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_amtchecker");
 }

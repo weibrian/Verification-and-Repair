@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(Verif CXX C)
 
-set(Boost_INCLUDE_DIR /usr/local/Cellar/boost/1.72.0/include/)
-set(Boost_LIBRARY_DIR /usr/local/Cellar/boost/1.72.0/include/)
+set(Boost_INCLUDE_DIR /usr/local/Cellar/boost/1.72.0_1/include/)
+set(Boost_LIBRARY_DIR /usr/local/Cellar/boost/1.72.0_1/include/)
 include_directories(${Boost_INCLUDE_DIR})
 
 set(CMAKE_CXX_STANDARD 11)

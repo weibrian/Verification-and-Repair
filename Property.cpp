@@ -48,7 +48,7 @@ void sig_alarm_handler(int sig) {
 }
 bool Property::property_check(dfa_t *dfa) {
     // Attn: this code is not thread safe
-    int *valid_symbols = dfa->alphabet_symbols;
+    std::vector<std::string> valid_symbols = *(dfa->alphabet_symbols);
     int alphabet_size = dfa->alphabet_size;
     dfa_t *prop_dfa = this->sim_dfa;
 
