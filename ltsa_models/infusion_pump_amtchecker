@@ -1,33 +1,23 @@
 Process:
 	INFUSION_AMT_CHECKER
 States:
-	18
+	9
 Transitions:
 	INFUSION_AMT_CHECKER = Q0,
 	Q0	= ({action_unplug, button_power} -> Q0
 		  |button_run -> Q1),
-	Q1	= (good -> Q2),
+	Q1	= ({action_unplug, button_power} -> Q0
+		  |button_run -> Q2),
 	Q2	= ({action_unplug, button_power} -> Q0
 		  |button_run -> Q3),
-	Q3	= (good -> Q4),
+	Q3	= ({action_unplug, button_power} -> Q0
+		  |button_run -> Q4),
 	Q4	= ({action_unplug, button_power} -> Q0
 		  |button_run -> Q5),
-	Q5	= (good -> Q6),
-	Q6	= ({action_unplug, button_power} -> Q0
+	Q5	= ({action_unplug, button_power} -> Q0
+		  |button_run -> Q6
 		  |button_run -> Q7),
-	Q7	= (good -> Q8),
-	Q8	= ({action_unplug, button_power} -> Q0
-		  |button_run -> Q9),
-	Q9	= (good -> Q10),
-	Q10	= ({action_unplug, button_power} -> Q0
-		  |button_run -> Q11
-		  |button_run -> Q15),
-	Q11	= (good -> Q12),
-	Q12	= ({action_unplug, button_power} -> Q0
-		  |button_run -> Q13
-		  |button_run -> Q14),
-	Q13	= (bad -> Q17),
-	Q14	= (good -> Q17),
-	Q15	= (goal_reached -> Q16),
-	Q16	= (good -> Q12),
-	Q17 = STOP.
+	Q6	= (button_run -> Q8
+		  |{action_unplug, button_power} -> Q0),
+	Q7	= (goal_reached -> Q6).,
+	Q8 = STOP.

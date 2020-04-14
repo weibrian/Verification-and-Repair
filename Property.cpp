@@ -44,6 +44,8 @@ std::size_t hash_value(const check_state &a) {
 
 std::function<void(int)> real_sigalarm_handler;
 void sig_alarm_handler(int sig) {
+//    std::cout << "Property check terminating via timeout" << std::endl;
+//    std::fflush(stdout);
     real_sigalarm_handler(sig);
 }
 bool Property::property_check(dfa_t *dfa) {
@@ -59,7 +61,7 @@ bool Property::property_check(dfa_t *dfa) {
     };
 
     signal(SIGALRM, sig_alarm_handler);
-    alarm(5);
+    alarm(2);
     alarm_status = 1;
 
 
@@ -90,7 +92,6 @@ bool Property::property_check(dfa_t *dfa) {
             if (ck->prop_state < 0) {
                 ck->prop_state = current->prop_state;
             }
-//            std::cout << "on " << valid_symbols[symb_ind] << " to (p = " << ck->prop_state << ", m = " << ck->dfa_state << ")" << std::endl;
             if (ck->dfa_state == DFA_DUMMY_SYMBOL) {
                 continue;
             } else if (array_contains(this->error_states, ck->prop_state, this->num_error_states)) {
