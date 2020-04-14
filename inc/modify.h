@@ -23,6 +23,6 @@ typedef std::vector<pattern_map_t*> mapping_list;
 pattern_map_t *modify_new_pattern_map(dfa_t *pattern1, dfa_t *pattern2);
 mapping_list modify_new_mapping();
 void modify_add_to_mappings(mapping_list &current_map, pattern_map_t *next);
-int modify_violate_property(dfa_t *main_dfa, Property *p, mapping_list *map);
+int modify_violate_property(dfa_t *modification_dfa, dfa_t *machine_dfa, Property *p, mapping_list *maps, int max_per_map);
 
 #endif /* __VERIF_MODIFY_H__ */

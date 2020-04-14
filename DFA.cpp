@@ -43,6 +43,7 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
 
     // initial state must be in the enumeration
     if (initial_state >= num_states || initial_state < 0) {
+        std::cout << "state count mismatch" << std::endl;
         return DFA_INVALID_ARG;
     }
 
@@ -59,14 +60,13 @@ int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
         goto failure;
     }
 
-
-//    memcpy(dfa->alphabet_symbols, symbols, alphabet_size * sizeof(std::string));
-
     for(int state = 0; state < num_states; state++) {
         dfa->final_states[state] = finals[state];
         for (int letter = 0; letter < alphabet_size; letter++) {
             int target_state = transition_matrix[state * alphabet_size + letter];
             if (target_state >= num_states) {
+                std::cout << "Target state error" << std::endl;
+//                array_print(transition_matrix, num_states, alphabet_size, stdout);
                 error_code = DFA_INVALID_ARG;
                 goto failure;
             }
@@ -115,11 +115,12 @@ int DFA_run_trace(dfa_t *dfa, const std::vector<std::string>& trace, int length)
     return dfa->final_states[current_state];
 }
 
-pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
+pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern, int skip_counter) {
     int *symbol_permutation = nullptr;
     int *matching = nullptr;
     int pattern_states, main_states, main_alphabet_size, pattern_alphabet_size;
     pattern_output_t *output;
+    int find_count = 0;
 
     if (main_dfa == nullptr || pattern == nullptr) {
         goto failure;
@@ -141,7 +142,8 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
     std::vector<std::string> *out_symbols;
 
     while(get_next_permutation(matching, pattern_states, main_states - 1) == 0) {
-
+//        std::cout << "Checking permutation ";
+//        array_print(matching, 1, pattern_states, stdout);
         int reduced_symbol_table[main_alphabet_size][pattern_states];
 
         for (int i = 0; i < main_alphabet_size; i++) {
@@ -154,19 +156,25 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
                 }
             }
         }
-
         while(get_next_permutation(symbol_permutation, pattern_alphabet_size, main_alphabet_size - 1) == 0) {
+
             for (int i = 0; i < pattern_alphabet_size; i++) {
                 for (int j = 0; j < pattern_states; j++) {
                     int main_dest_val = reduced_symbol_table[symbol_permutation[i]][j];
                     int pattern_dest_val = pattern->transition_matrix[j * pattern_alphabet_size + i];
-                    if (main_dest_val != pattern_dest_val) {
+                    if (pattern_dest_val != DFA_DUMMY_SYMBOL && main_dest_val != pattern_dest_val) {
                         goto permutation_failed;
                     }
                 }
             }
+
+            if (find_count < skip_counter) {
+                find_count++;
+//                std::cout << "Jumping on count miss" << std::endl;
+                goto permutation_failed;
+            }
+
             out_symbols = new std::vector<std::string>();
-//            out_symbols->resize(pattern_alphabet_size);
             for (int i = 0; i < pattern_alphabet_size; i++) {
                 std::string s = main_dfa->alphabet_symbols->at(symbol_permutation[i]);
                 out_symbols->push_back(s);
@@ -176,6 +184,7 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
                 goto failure;
             }
             output->states = matching;
+            output->num_states = pattern_states;
             output->symbols = out_symbols;
             free(symbol_permutation);
             return output;
@@ -183,6 +192,7 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
             permutation_failed:
                 continue;
         }
+
     }
 
     failure:
@@ -191,7 +201,7 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern) {
         return nullptr;
 }
 
-int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) {
+int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern, int skips) {
     if (main_dfa == nullptr || original_pattern == nullptr || target_pattern == nullptr) {
         return DFA_INVALID_ARG;
     }
@@ -199,10 +209,14 @@ int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern) 
             original_pattern->alphabet_size != target_pattern->alphabet_size) {
         return DFA_NOT_YET_IMPL;
     }
-    pattern_output_t *pattern = DFA_find_pattern(main_dfa, original_pattern);
+    pattern_output_t *pattern = DFA_find_pattern(main_dfa, original_pattern, skips);
     if (pattern == nullptr) {
         return DFA_PATTERN_NOT_FOUND;
+    } else {
+//        std::cout << "Pattern matched with states ";
+//        array_print(pattern->states, 1, pattern->num_states, stdout);
     }
+
     int pattern_states = original_pattern->num_states;
     int pattern_alphabet = original_pattern->alphabet_size;
     int main_alphabet = main_dfa->alphabet_size;
@@ -232,6 +246,7 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
 
     int num_states_1 = dfa_1->num_states;
     int num_states_2 = dfa_2->num_states;
+
     int new_num_states = num_states_1 * num_states_2;
     int alphabet_size_1 = dfa_1->alphabet_size;
     int alphabet_size_2 = dfa_2->alphabet_size;
@@ -244,10 +259,12 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
     tmp_set.insert(dfa_2->alphabet_symbols->begin(), dfa_2->alphabet_symbols->end());
     auto *new_alphabet_symbols = new std::vector<std::string>(tmp_set.begin(), tmp_set.end());
     int new_alph_size = new_alphabet_symbols->size();
-
+//    std::cout << new_alph_size << std::endl;
+//    std::cout << new_num_states << std::endl;
+//    std::cout << num_states_1 << ", " << num_states_2 << std::endl;
     new_final_states = (bool*)calloc(new_num_states, sizeof(bool)); // initialise as false
     new_transition_matrix = (int*)malloc(new_num_states * new_alph_size * sizeof(int));
-
+//    std::cout << new_num_states * new_alph_size << std::endl;
     if (new_final_states == nullptr
         || new_transition_matrix == nullptr) {
         err = DFA_MEMORY_ERROR;
@@ -260,9 +277,12 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
                 int s_ind2 = get_symbol_index(dfa_2, new_alphabet_symbols->at(symb_ind));
                 int M1_target = s_ind1 == DFA_INVALID_SYMBOL ? s1 : dfa_1->transition_matrix[s1 * alphabet_size_1 + s_ind1];
                 int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2->transition_matrix[s2 * alphabet_size_2 + s_ind2];
-                new_transition_matrix[(s1 * num_states_1 + s2) * new_alph_size + symb_ind] =
+//                std::cout << (s1 * num_states_1 + s2) * new_alph_size + symb_ind << std::endl;
+//                std::cout << "s1 = " << s1 << ", s2 = " << s2 << ", num_states_1 = " << num_states_1 << ", new_alpha_size = " << new_alph_size << ", symb_ind = " << symb_ind << std::endl;
+//                std::cout <<  ((M1_target == DFA_DUMMY_SYMBOL || M2_target == DFA_DUMMY_SYMBOL) ? DFA_DUMMY_SYMBOL : (M1_target * num_states_2 + M2_target)) << std::endl;
+                new_transition_matrix[(s1 * num_states_2 + s2) * new_alph_size + symb_ind] =
                         (M1_target == DFA_DUMMY_SYMBOL || M2_target == DFA_DUMMY_SYMBOL) ?
-                            DFA_DUMMY_SYMBOL : M1_target * num_states_1 + M2_target;
+                            DFA_DUMMY_SYMBOL : (M1_target * num_states_2 + M2_target);
             }
             if (dfa_1->final_states[s1] && dfa_2->final_states[s2]) {
                 new_final_states[s1 * num_states_1 + s2] = true;
@@ -273,6 +293,7 @@ int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
     err = DFA_new(dest, new_num_states, new_alph_size, 0,
                 new_final_states, *new_alphabet_symbols,
                 new_transition_matrix);
+//    std::cout << "DFA_new returned with code " << err << std::endl;
     failure:
     free(new_alphabet_symbols);
     free(new_final_states);
@@ -323,10 +344,6 @@ int DFA_clone(dfa_t *source, dfa_t *target) {
     target->alphabet_size = source->alphabet_size;
     target->final_states = (bool*)malloc(source->num_states * sizeof(bool));
     memcpy(target->final_states, source->final_states, source->num_states * sizeof(bool));
-
-
-//    target->alphabet_symbols = (int*)malloc(source->alphabet_size * sizeof(int));
-//    memcpy(target->alphabet_symbols, source->alphabet_symbols, source->alphabet_size * sizeof(int));
 
     target->alphabet_symbols = new std::vector<std::string>(source->alphabet_symbols->begin(), source->alphabet_symbols->end());
 

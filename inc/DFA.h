@@ -47,6 +47,7 @@ typedef struct dfa {
 /* Output for when a pattern is identified within a DFA */
 typedef struct pattern_output {
     int *states;            /* States in the DFA  */
+    int num_states;         /* Number of states in the matched pattern */
     std::vector<std::string> *symbols;           /* Symbols of the DFA */
 } pattern_output_t;
 
@@ -94,7 +95,7 @@ int DFA_run_trace(dfa_t *dfa, const std::vector<std::string>& trace, int length)
  * @param pattern DFA representing the pattern we want
  * @return an array indicating the states and symbols which match the pattern, or NULL is it cannot be found
  */
-pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern);
+pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern, int skip_counter);
 
 /** @brief Finds a pattern in a DFA and modifies it to a target pattern
  *
@@ -107,7 +108,7 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern);
  * @param target_pattern
  * @return 0 on success, negative error code on failure
  */
-int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern);
+int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern, int skips);
 
 /** @brief Prints information representing the construction of the DFA to specified file
  *
