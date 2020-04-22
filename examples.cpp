@@ -178,13 +178,13 @@ int prop_five(dfa_t *dfa) {
 }
 
 int ex_infusion(dfa_t *dfa) {
-    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_relaxed");
+    return parser_go(dfa, "./ltsa_models/infusion_pump_relaxed");
 }
 
 int ex_human(dfa_t *dfa) {
-    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_human");
+    return parser_go(dfa, "./ltsa_models/infusion_pump_human");
 }
 
 int ex_prop(dfa_t *dfa) {
-    return parser_go(dfa, "/Users/bwei/CLionProjects/Verif/ltsa_models/infusion_pump_amtchecker");
+    return parser_go(dfa, "./ltsa_models/infusion_pump_amtchecker");
 }

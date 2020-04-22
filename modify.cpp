@@ -49,6 +49,15 @@ int modify_violate_property(dfa_t *modification_dfa, dfa_t *machine_dfa, Propert
                 } else if (!(p->property_check(&dest))) {
 //                    DFA_clone(modification_dfa_copy, modification_dfa);
 //                    return MODIFY_SUCCESSFUL;
+                    char outname[8];
+                    snprintf(outname, 8, "%d.out", succ_count);
+                    FILE *outfile = fopen(outname, "w+");
+                    if (outfile == nullptr) {
+                        perror("Error saving output: ");
+                        exit(1);
+                    }
+                    DFA_print(modification_dfa_copy, outfile);
+                    fclose(outfile);
                     succ_count++;
                     std::cout << "!";
                 } else {

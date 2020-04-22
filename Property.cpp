@@ -61,7 +61,7 @@ bool Property::property_check(dfa_t *dfa) {
     };
 
     signal(SIGALRM, sig_alarm_handler);
-    alarm(2);
+    alarm(1);
     alarm_status = 1;
 
 
