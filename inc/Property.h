@@ -21,7 +21,5 @@ public:
     bool property_check(dfa_t *dfa);
 };
 
-extern "C" void property_print_C(Property *p);
-extern "C" bool property_check_C(Property *p, dfa_t *dfa);
 
 #endif /* __VERIF_PROPERTY_H__ */
