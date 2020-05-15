@@ -7,7 +7,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include "inc/examples.h"
 #include "inc/ltsa_parser.h"
 

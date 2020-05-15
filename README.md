@@ -1,7 +1,18 @@
 # Verification-and-Repair
 
 ## Overview
- TODO
+Poorly designed interfaces can pose a major danger to users in systems where safety is a key concern
+— for example, many inadequately created medical devices, which have rectifiable designs, have led
+to unnecessary fatalities. This research project is focused on modelling these complex systems of
+human machine interaction with finite state machines, and using them to better understand how we
+can eliminate unsafe behaviour. To do so, we first model and simplify complex systems and possible
+human interactions with them into finite state processes. We then systematically inject errors into
+correct models based on common human errors with the goal of violating certain safety properties. By
+examining the case study of an infusion pump whose combined model contains fewer than 100 states,
+we were able to produce 545 new machines, of which 17 led to safety violations. This demonstrates
+that we can reliably model and replicate some of the common mistakes that humans make when
+interacting with machines. The primary focus of future work is to then modify the model of the
+machine such that it will safeguard against such human errors.
  
 ## Running the code
 Compile the code with `cmake` in standard fashion.  Requires `boost` library -- may need to update

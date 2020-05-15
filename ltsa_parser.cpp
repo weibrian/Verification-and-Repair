@@ -1,6 +1,9 @@
-//
-// Created by Brian Wei on 2/26/20.
-//
+/** @file ltsa_parser.cpp
+ *  @brief Parser for LTSA output files
+ *  @author Brian Wei
+ *
+ *  See header file for detailed documentation
+ */
 
 #include <fstream>
 #include <iostream>
@@ -9,14 +12,22 @@
 #include <string>
 #include <cctype>
 #include <algorithm>
-#include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/split.hpp>
-
 #include "inc/ltsa_parser.h"
-#include "inc/array_util.h"
 
+/* strip whitespace string */
 #define STRIP(str) ((str).erase(std::remove_if((str).begin(), (str).end(), ::isspace), (str).end()));
+
+/** @brief Ignore some lines from a file
+ *
+ * @param line Probably not needed...
+ * @param f File stream to ignore from
+ * @param count Number of lines to ignore
+ */
+static void ignore_lines(std::string &line, std::ifstream &f, int count);
+
+/* ***** IMPLEMENTATIONN ***** */
 
 static void ignore_lines(std::string &line, std::ifstream &f, int count) {
     for (int i = 0; i < count; i++) {
@@ -102,15 +113,11 @@ int parser_go(dfa_t *dfa, const char *path) {
         if (line.at(line.length() - 1) == ',') {
             current_state_number++;
         }
-        /*if (line.find(',', 0) != std::string::npos) {
-            current_state_number++;
-        }*/
     }
     bool finals[num_states];
     for (int i = 0; i < num_states; i++) {
         finals[i] = false;
     }
-//    memset(finals, 0, num_states * sizeof(bool));
     int alphabet_size = current_transition_counter;
     int *trans = (int *) malloc(num_states * alphabet_size * sizeof(int));
     if (trans == nullptr) {

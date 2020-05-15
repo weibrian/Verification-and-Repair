@@ -1,12 +1,81 @@
-//
-// Created by Brian Wei on 4/1/20.
-//
+/** @file pattern_lib.cpp
+ *  @brief Pattern Library
+ *  @author Brian Wei
+ *
+ *  Detailed Documentation in header file
+ */
 
-#include "inc/pattern_lib.h"
 #include "inc/DFA.h"
 #include "inc/modify.h"
 
-int patt_3state_template(dfa_t *dfa, int transitions[3][2]) {
+/** @brief A template for patterns with 3 states in start and end
+ *
+ * @param dfa A pointer to DFA which will contain te pattern
+ * @param transitions Transition matrix for the corresponding pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_3state_template(dfa_t *dfa, int transitions[3][2]);
+
+/** @brief Initialize a dfa with a pattern with the generic starting configuration
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_generic_pre(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of premature start
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_prematrurestart_post(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of delayed start
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_delaystart_post(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of omission
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_omission_post(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of reversal
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_reversal_post(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for source of intrusion
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_intrusion_pre(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of intrusion
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_intrusion_post(dfa_t *dfa);
+
+/** @brief Initialize a dfa with pattern for target of repetition
+ *
+ * @param dfa A pointer to DFA which will contain the pattern
+ * @return zero on success, negative error code on failure
+ */
+static int patt_repetition_post(dfa_t *dfa);
+
+
+/* *****     IMPLEMENTATION     ***** */
+
+static int patt_3state_template(dfa_t *dfa, int transitions[3][2]) {
     if (dfa == nullptr) {
         return -1;
     }
@@ -27,42 +96,42 @@ int patt_3state_template(dfa_t *dfa, int transitions[3][2]) {
     return out;
 }
 
-int patt_generic_pre(dfa_t *dfa) {
+static int patt_generic_pre(dfa_t *dfa) {
     int transitions[3][2] = { {1,DFA_DUMMY_SYMBOL}, {DFA_DUMMY_SYMBOL,2}, {DFA_DUMMY_SYMBOL,DFA_DUMMY_SYMBOL} };
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_prematrurestart_post(dfa_t *dfa) {
+static int patt_prematrurestart_post(dfa_t *dfa) {
     int transitions[3][2] = { {1,1}, {DFA_DUMMY_SYMBOL, 2}, {DFA_DUMMY_SYMBOL ,DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_delaystart_post(dfa_t *dfa) {
+static int patt_delaystart_post(dfa_t *dfa) {
     int transitions[3][2] = { {1, DFA_DUMMY_SYMBOL}, {2, 2}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_omission_post(dfa_t *dfa) {
+static int patt_omission_post(dfa_t *dfa) {
     int transitions[3][2] = { {2, 2}, {DFA_DUMMY_SYMBOL, 2}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_reversal_post(dfa_t *dfa) {
+static int patt_reversal_post(dfa_t *dfa) {
     int transitions[3][2] = { {1, 1}, {2, 2}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_intrusion_pre(dfa_t *dfa) {
+static int patt_intrusion_pre(dfa_t *dfa) {
     int transitions[3][2] = { {1, DFA_DUMMY_SYMBOL}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_intrusion_post(dfa_t *dfa) {
+static int patt_intrusion_post(dfa_t *dfa) {
     int transitions[3][2] = { {1, 1}, {2, DFA_DUMMY_SYMBOL}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }
 
-int patt_repetition_post(dfa_t *dfa) {
+static int patt_repetition_post(dfa_t *dfa) {
     int transitions[3][2] = { {0, 1}, {0, 2}, {DFA_DUMMY_SYMBOL, DFA_DUMMY_SYMBOL}};
     return patt_3state_template(dfa, transitions);
 }

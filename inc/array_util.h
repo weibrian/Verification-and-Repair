@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef __VERIF_ARRAY_UITL_H__
 #define __VERIF_ARRAY_UITL_H__
 
@@ -15,7 +11,3 @@ void array_quicksort(int *array, int length);
 int array_union(const int *a1, int a1_length, const int *a2, int a2_length, int *out);
 
 #endif /* __VERIF_ARRAY_UITL_H__ */
-
-#ifdef __cplusplus
-}
-#endif
