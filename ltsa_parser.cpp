@@ -35,7 +35,7 @@ static void ignore_lines(std::string &line, std::ifstream &f, int count) {
     }
 }
 
-int parser_go(dfa_t *dfa, const char *path) {
+dfa *parser_go(const char *path) {
 
     std::string line;
     std::ifstream f(path);
@@ -60,12 +60,9 @@ int parser_go(dfa_t *dfa, const char *path) {
         } else if ((start_of_trans_name = line.find('|', 0)) != std::string::npos) {
             start_of_trans_name++;
         } else {
-           if (line.find("STOP", 0) != std::string::npos) {
-               sinks.push_back(current_state_number++);
-               continue;
-           } else {
-               return -1;
-           }
+            assert(line.find("STOP", 0) != std::string::npos);
+            sinks.push_back(current_state_number++);
+            continue;
         }
         const char *ending = line.substr(1 + line.find_last_of('Q', std::string::npos)).c_str();
         int target_state;
@@ -91,9 +88,6 @@ int parser_go(dfa_t *dfa, const char *path) {
                 }
                 transitions[current_state_number].insert(std::pair<int, int>(this_transition_num, target_state));
             }
-//            for (const auto &t : tokens) {
-//                std::cout << t << std::endl;
-//            }
         } else {
             int trans_name_len = ind_of_arrow - start_of_trans_name;
             std::string trans_name = line.substr(start_of_trans_name, trans_name_len);
@@ -114,16 +108,11 @@ int parser_go(dfa_t *dfa, const char *path) {
             current_state_number++;
         }
     }
-    bool finals[num_states];
-    for (int i = 0; i < num_states; i++) {
-        finals[i] = false;
-    }
+
+    std::vector<bool> finals(num_states, false);
     int alphabet_size = current_transition_counter;
-    int *trans = (int *) malloc(num_states * alphabet_size * sizeof(int));
-    if (trans == nullptr) {
-        std::cout << "Returning here" << std::endl;
-        return -1;
-    }
+    std::vector<int> trans;
+    trans.resize(num_states * alphabet_size);
 
     for (int q = 0; q < num_states; q++) {
         if (std::find(sinks.begin(), sinks.end(), q) != sinks.end()) {
@@ -138,7 +127,6 @@ int parser_go(dfa_t *dfa, const char *path) {
             else trans[q * alphabet_size + s] = it->second;
         }
     }
-    int out = DFA_new(dfa, num_states, alphabet_size, 0, finals, *symbols, trans);
-    free(trans);
-    return out;
+    return new dfa(num_states, alphabet_size, 0,
+            finals, *symbols, trans.data());
 }

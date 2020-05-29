@@ -16,6 +16,6 @@
  * @param path Relative path to the LTSA output file
  * @return zero on success, negative error code on failure
  */
-int parser_go(dfa_t *dfa, const char *path);
+dfa *parser_go(const char *path);
 
 #endif /* __VERIF_LTSA_PARSER_H__ */

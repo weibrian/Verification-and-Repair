@@ -23,8 +23,8 @@
 /* Structure for pattern maps -- DFAs for the initial and target
  * configurations */
 typedef struct pattern_map {
-    dfa_t *initial;
-    dfa_t *target;
+    dfa *initial;
+    dfa *target;
 } pattern_map_t;
 
 /* type definition for mapping_list -- a list of pattern maps */
@@ -36,7 +36,7 @@ typedef std::vector<pattern_map_t*> mapping_list;
  * @param pattern2 Second pattter, the target pattern in the map
  * @return a pointer to a pattern_map; created via malloc
  */
-pattern_map_t *modify_new_pattern_map(dfa_t *pattern1, dfa_t *pattern2);
+pattern_map_t *modify_new_pattern_map(dfa &pattern1, dfa &pattern2);
 
 /** @brief Creates a new mapping_list
  *
@@ -49,7 +49,7 @@ mapping_list modify_new_mapping();
  * @param current_map Reference to mapping list to add to
  * @param next Pointer to pattern map to add
  */
-void modify_add_to_mappings(mapping_list &current_map, pattern_map_t *next);
+void modify_add_to_mappings(mapping_list &current_map, pattern_map_t &next);
 
 /** @brief Modify a DFA such that it will violate a property
  *
@@ -67,7 +67,7 @@ void modify_add_to_mappings(mapping_list &current_map, pattern_map_t *next);
  * @return zero on success, negative error code on error or if no violating modifications
  *          are found
  */
-int modify_violate_property(dfa_t *modification_dfa, dfa_t *machine_dfa, Property *p,
+int modify_violate_property(dfa &modification_dfa, dfa &machine_dfa, Property *p,
         mapping_list *maps, int max_per_map);
 
 #endif /* __VERIF_MODIFY_H__ */

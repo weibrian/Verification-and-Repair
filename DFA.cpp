@@ -5,15 +5,10 @@
  *  Detailed documentation may be found in the header file DFA.h
  */
 
-#include <cstdlib>
-#include <cstring>
 #include <cassert>
 #include <cstdio>
-#include <iostream>
-#include <string>
 #include <set>
 #include "inc/DFA.h"
-#include "inc/array_util.h"
 
 /** @brief Sets the current_permutation array to the next permutation
  *
@@ -26,142 +21,103 @@
  * @param max_value Maximum value an entry in the permutation can take
  * @return 0 on success, negative error code on failure
  */
-static int get_next_permutation(int *current_permutation, int length, int max_value);
+static int get_next_permutation(std::vector<int>& current_permutation, int max_value);
+
+static bool vec_contains_duplicates(std::vector<int>& v);
+
+static int vec_index_of(std::vector<int>& v, int val);
+
+static void vec_2d_print(const std::vector<std::vector<int>>& v, FILE *f);
 
 /* *****     IMPLEMENTATION     ***** */
-
-int DFA_new(dfa_t *dfa, int num_states, int alphabet_size, int initial_state,
-        const bool *finals, const std::vector<std::string>& symbols,
+dfa::dfa(int num_states, int alphabet_size, int initial_state,
+         std::vector<bool>& finals, const std::vector<std::string>& symbols,
+         const int *transition_matrix) {
+    DFA_constructor_helper(num_states, alphabet_size, initial_state,
+            finals, symbols, transition_matrix);
+}
+void dfa::DFA_constructor_helper(int num_states, int alphabet_size, int initial_state,
+        std::vector<bool>& finals, const std::vector<std::string>& symbols,
         const int *transition_matrix) {
-    int error_code;
-    if (dfa == nullptr) {
-        return DFA_INVALID_ARG;
-    }
-    dfa->initial_state = initial_state;
-    dfa->num_states = num_states;
-    dfa->alphabet_size = alphabet_size;
+    assert(initial_state < num_states && initial_state >= 0);
 
-    // initial state must be in the enumeration
-    if (initial_state >= num_states || initial_state < 0) {
-        std::cout << "state count mismatch" << std::endl;
-        return DFA_INVALID_ARG;
+    this->num_states = num_states;
+    this->initial_state = initial_state;
+    for(int i = 0; i < num_states; i++) {
+        if (finals[i]) this->final_states.insert(i);
     }
 
-    dfa->final_states = nullptr;
-    dfa->transition_matrix = nullptr;
-
-    dfa->final_states = (bool*)calloc(num_states, sizeof(bool));
-    dfa->transition_matrix = (int*)calloc(num_states * alphabet_size, sizeof(int));
-    dfa->alphabet_symbols = new std::vector<std::string>(symbols);
-//            (std::string*)calloc(alphabet_size, sizeof(std::string));
-
-    if (dfa->final_states == nullptr || dfa->transition_matrix == nullptr || dfa->alphabet_symbols == nullptr) {
-        error_code = DFA_MEMORY_ERROR;
-        goto failure;
-    }
-
+    this->alphabet_symbols = std::vector<std::string>(symbols);
+    this->transition_matrix.resize(num_states);
     for(int state = 0; state < num_states; state++) {
-        dfa->final_states[state] = finals[state];
-        for (int letter = 0; letter < alphabet_size; letter++) {
+        this->transition_matrix[state].resize(alphabet_size);
+        for(int letter = 0; letter < alphabet_size; letter++) {
             int target_state = transition_matrix[state * alphabet_size + letter];
-            if (target_state >= num_states) {
-                std::cout << "Target state error" << std::endl;
-//                array_print(transition_matrix, num_states, alphabet_size, stdout);
-                error_code = DFA_INVALID_ARG;
-                goto failure;
-            }
-            dfa->transition_matrix[state * alphabet_size + letter] = target_state;
+            assert(target_state < num_states && target_state >= -1);
+            this->transition_matrix[state][letter] = target_state;
         }
     }
-    return 0;
-
-    failure:
-        free(dfa->final_states);
-        free(dfa->transition_matrix);
-        free(dfa->alphabet_symbols);
-        return error_code;
 }
 
-int get_symbol_index(dfa_t *dfa, const std::string& symbol) {
-    assert(dfa != nullptr);
-
-    auto it = std::find(dfa->alphabet_symbols->begin(), dfa->alphabet_symbols->end(), symbol);
-    int result = it - dfa->alphabet_symbols->begin();
-//    int result = array_index_of(dfa->alphabet_symbols, symbol, dfa->alphabet_size, 1);
-    return result >= dfa->alphabet_symbols->size() ? DFA_INVALID_SYMBOL : result;
+int dfa::get_symbol_index(const std::string& symbol) {
+    auto it = std::find(this->alphabet_symbols.begin(), this->alphabet_symbols.end(), symbol);
+    int result = it - this->alphabet_symbols.begin();
+    return result >= this->alphabet_symbols.size() ? DFA_INVALID_SYMBOL : result;
 }
 
-int DFA_run_trace(dfa_t *dfa, const std::vector<std::string>& trace, int length) {
-
-    if (dfa == nullptr || length < 0) {
+int dfa::DFA_run_trace(const std::vector<std::string>& trace) {
+    int length = trace.size();
+    int current_state = this->initial_state;
+    if (current_state < 0 || current_state >= this->num_states) {
         return DFA_INVALID_ARG;
     }
-
-    int current_state = dfa->initial_state;
-    if (current_state < 0 || current_state >= dfa->num_states) {
-        return DFA_INVALID_ARG;
-    }
-    int num_states = dfa->num_states;
     for (int i = 0; i < length; i++) {
-        int symbol_index = get_symbol_index(dfa, trace[i]);
+        int symbol_index = this->get_symbol_index(trace[i]);
         if (symbol_index < 0) {
             return DFA_INVALID_ARG;
         }
-        current_state= dfa->transition_matrix[current_state * num_states + symbol_index];
-        if (current_state < 0) {
+        if (this->transition_matrix[current_state][symbol_index] < 0) {
             return 0;
         }
     }
-    return dfa->final_states[current_state];
+    return this->final_states.find(current_state) == this->final_states.end();
 }
 
-pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern, int skip_counter) {
-    int *symbol_permutation = nullptr;
-    int *matching = nullptr;
+pattern_output *dfa::DFA_find_pattern(dfa& pattern, int skip_counter) {
     int pattern_states, main_states, main_alphabet_size, pattern_alphabet_size;
-    pattern_output_t *output;
     int find_count = 0;
+    pattern_output *output;
+    pattern_states = pattern.num_states;
+    main_states = this->num_states;
+    main_alphabet_size = this->alphabet_symbols.size();
+    pattern_alphabet_size = pattern.alphabet_symbols.size();
 
-    if (main_dfa == nullptr || pattern == nullptr) {
-        goto failure;
-    }
-    pattern_states = pattern->num_states;
-    main_states = main_dfa->num_states;
-    main_alphabet_size = main_dfa->alphabet_size;
-    pattern_alphabet_size = pattern->alphabet_size;
+    assert(pattern_states <= main_states);
 
-    if (pattern_states > main_states) {
-        goto failure;
-    }
+    auto symbol_permutation = std::vector<int>(pattern_alphabet_size, 0);
+    auto matching = std::vector<int>(pattern_states, 0);
 
-    symbol_permutation = (int*)calloc(pattern_alphabet_size, sizeof(int));
-    matching = (int*)calloc(pattern_states, sizeof(int));
-    if (symbol_permutation == nullptr || matching == nullptr) {
-        goto failure;
-    }
-    std::vector<std::string> *out_symbols;
+    std::vector<std::string> out_symbols;
 
-    while(get_next_permutation(matching, pattern_states, main_states - 1) == 0) {
-//        std::cout << "Checking permutation ";
-//        array_print(matching, 1, pattern_states, stdout);
+    while(get_next_permutation(matching, main_states - 1) == 0) {
         int reduced_symbol_table[main_alphabet_size][pattern_states];
 
         for (int i = 0; i < main_alphabet_size; i++) {
             for(int j = 0; j < pattern_states; j++) {
-                int index, dest = (main_dfa->transition_matrix)[matching[j] * main_alphabet_size + i];
-                if ((index = array_index_of(matching, dest, pattern_states, 1)) >= 0) {
+                int index, dest = (this->transition_matrix)[matching[j]][i];
+                if ((index = vec_index_of(matching, dest)) >= 0) {
                     reduced_symbol_table[i][j] = index;
                 } else {
                     reduced_symbol_table[i][j] = DFA_DUMMY_SYMBOL;
                 }
             }
         }
-        while(get_next_permutation(symbol_permutation, pattern_alphabet_size, main_alphabet_size - 1) == 0) {
+        while(get_next_permutation(symbol_permutation, main_alphabet_size - 1) == 0) {
 
             for (int i = 0; i < pattern_alphabet_size; i++) {
                 for (int j = 0; j < pattern_states; j++) {
                     int main_dest_val = reduced_symbol_table[symbol_permutation[i]][j];
-                    int pattern_dest_val = pattern->transition_matrix[j * pattern_alphabet_size + i];
+                    int pattern_dest_val = pattern.transition_matrix[j][i];
                     if (pattern_dest_val != DFA_DUMMY_SYMBOL && main_dest_val != pattern_dest_val) {
                         goto permutation_failed;
                     }
@@ -170,23 +126,17 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern, int skip_cou
 
             if (find_count < skip_counter) {
                 find_count++;
-//                std::cout << "Jumping on count miss" << std::endl;
                 goto permutation_failed;
             }
 
-            out_symbols = new std::vector<std::string>();
+            out_symbols = std::vector<std::string>();
             for (int i = 0; i < pattern_alphabet_size; i++) {
-                std::string s = main_dfa->alphabet_symbols->at(symbol_permutation[i]);
-                out_symbols->push_back(s);
+                std::string s = this->alphabet_symbols[symbol_permutation[i]];
+                out_symbols.push_back(s);
             }
-            output = (pattern_output_t*)malloc(sizeof(pattern_output_t));
-            if (output == nullptr) {
-                goto failure;
-            }
-            output->states = matching;
-            output->num_states = pattern_states;
-            output->symbols = out_symbols;
-            free(symbol_permutation);
+            output = new pattern_output;
+            output->states = std::vector<int>(matching);
+            output->symbols = std::vector<std::string>(out_symbols);
             return output;
 
             permutation_failed:
@@ -194,169 +144,135 @@ pattern_output_t *DFA_find_pattern(dfa_t *main_dfa, dfa_t *pattern, int skip_cou
         }
 
     }
-
-    failure:
-        free(symbol_permutation);
-        free(matching);
-        return nullptr;
+    return nullptr;
 }
 
-int DFA_modify(dfa_t *main_dfa, dfa_t *original_pattern, dfa_t *target_pattern, int skips) {
-    if (main_dfa == nullptr || original_pattern == nullptr || target_pattern == nullptr) {
-        return DFA_INVALID_ARG;
-    }
-    if (original_pattern->num_states != target_pattern->num_states ||
-            original_pattern->alphabet_size != target_pattern->alphabet_size) {
+int dfa::DFA_modify(dfa& original_pattern, dfa& target_pattern, int skips) {
+    int original_asize = original_pattern.alphabet_symbols.size();
+    int target_asize = target_pattern.alphabet_symbols.size();
+    if (original_pattern.num_states != target_pattern.num_states ||
+            original_asize != target_asize) {
         return DFA_NOT_YET_IMPL;
     }
-    pattern_output_t *pattern = DFA_find_pattern(main_dfa, original_pattern, skips);
-    if (pattern == nullptr) {
-        return DFA_PATTERN_NOT_FOUND;
-    } else {
-//        std::cout << "Pattern matched with states ";
-//        array_print(pattern->states, 1, pattern->num_states, stdout);
-    }
 
-    int pattern_states = original_pattern->num_states;
-    int pattern_alphabet = original_pattern->alphabet_size;
-    int main_alphabet = main_dfa->alphabet_size;
+    pattern_output *pattern = DFA_find_pattern(original_pattern, skips);
+    if (pattern == nullptr) return DFA_PATTERN_NOT_FOUND;
+
+    int pattern_states = original_pattern.num_states;
 
     for(int state_no = 0; state_no < pattern_states; state_no++) {
         int state = pattern->states[state_no];
-        for(int symbol_no = 0; symbol_no < pattern_alphabet; symbol_no++) {
-            int symbol_ind = get_symbol_index(main_dfa, pattern->symbols->at(symbol_no));
+        for(int symbol_no = 0; symbol_no < original_asize; symbol_no++) {
+            int symbol_ind = get_symbol_index(pattern->symbols[symbol_no]);
             if (symbol_ind == DFA_INVALID_SYMBOL) {
                 return DFA_PATTERN_NOT_FOUND;
             }
-            int target = target_pattern->transition_matrix[state_no * pattern_alphabet + symbol_no];
-            main_dfa->transition_matrix[state * main_alphabet + symbol_ind] =
+            int target = target_pattern.transition_matrix[state_no][symbol_no];
+            this->transition_matrix[state][symbol_ind] =
                     target == DFA_DUMMY_SYMBOL ? DFA_DUMMY_SYMBOL : pattern->states[target];
         }
     }
-
-    DFA_free_pattern(pattern);
     return 0;
 }
 
-int DFA_parallel(dfa_t *dest, dfa_t *dfa_1, dfa_t *dfa_2) {
-    if (dest == nullptr || dfa_1 == nullptr || dfa_2 == nullptr) {
-        return DFA_INVALID_ARG;
-    }
-    int err;
+dfa::dfa(dfa& dfa_1, dfa& dfa_2) {
 
-    int num_states_1 = dfa_1->num_states;
-    int num_states_2 = dfa_2->num_states;
+    int num_states_1 = dfa_1.num_states;
+    int num_states_2 = dfa_2.num_states;
 
     int new_num_states = num_states_1 * num_states_2;
-    int alphabet_size_1 = dfa_1->alphabet_size;
-    int alphabet_size_2 = dfa_2->alphabet_size;
-
-    int *new_transition_matrix = nullptr;
-    bool *new_final_states = nullptr;
 
     std::set<std::string> tmp_set;
-    tmp_set.insert(dfa_1->alphabet_symbols->begin(), dfa_1->alphabet_symbols->end());
-    tmp_set.insert(dfa_2->alphabet_symbols->begin(), dfa_2->alphabet_symbols->end());
-    auto *new_alphabet_symbols = new std::vector<std::string>(tmp_set.begin(), tmp_set.end());
-    int new_alph_size = new_alphabet_symbols->size();
-//    std::cout << new_alph_size << std::endl;
-//    std::cout << new_num_states << std::endl;
-//    std::cout << num_states_1 << ", " << num_states_2 << std::endl;
-    new_final_states = (bool*)calloc(new_num_states, sizeof(bool)); // initialise as false
-    new_transition_matrix = (int*)malloc(new_num_states * new_alph_size * sizeof(int));
-//    std::cout << new_num_states * new_alph_size << std::endl;
-    if (new_final_states == nullptr
-        || new_transition_matrix == nullptr) {
-        err = DFA_MEMORY_ERROR;
-        goto failure;
-    }
+    tmp_set.insert(dfa_1.alphabet_symbols.begin(), dfa_1.alphabet_symbols.end());
+    tmp_set.insert(dfa_2.alphabet_symbols.begin(), dfa_2.alphabet_symbols.end());
+    auto new_alphabet_symbols = std::vector<std::string>(tmp_set.begin(), tmp_set.end());
+    int new_alph_size = new_alphabet_symbols.size();
+    auto new_final_states = std::vector<bool>( new_num_states, false);
+    auto new_transition_matrix = std::vector<int>();
+    new_transition_matrix.resize(new_num_states * new_alph_size);
+
     for(int s1 = 0; s1 < num_states_1; s1++) {
         for(int s2 = 0; s2 < num_states_2; s2++) {
             for(int symb_ind = 0; symb_ind < new_alph_size; symb_ind++) {
-                int s_ind1 = get_symbol_index(dfa_1, new_alphabet_symbols->at(symb_ind));
-                int s_ind2 = get_symbol_index(dfa_2, new_alphabet_symbols->at(symb_ind));
-                int M1_target = s_ind1 == DFA_INVALID_SYMBOL ? s1 : dfa_1->transition_matrix[s1 * alphabet_size_1 + s_ind1];
-                int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2->transition_matrix[s2 * alphabet_size_2 + s_ind2];
-//                std::cout << (s1 * num_states_1 + s2) * new_alph_size + symb_ind << std::endl;
-//                std::cout << "s1 = " << s1 << ", s2 = " << s2 << ", num_states_1 = " << num_states_1 << ", new_alpha_size = " << new_alph_size << ", symb_ind = " << symb_ind << std::endl;
-//                std::cout <<  ((M1_target == DFA_DUMMY_SYMBOL || M2_target == DFA_DUMMY_SYMBOL) ? DFA_DUMMY_SYMBOL : (M1_target * num_states_2 + M2_target)) << std::endl;
+                int s_ind1 = dfa_1.get_symbol_index(new_alphabet_symbols[symb_ind]);
+                int s_ind2 = dfa_2.get_symbol_index(new_alphabet_symbols[symb_ind]);
+                int M1_target = s_ind1 == DFA_INVALID_SYMBOL ? s1 : dfa_1.transition_matrix[s1][s_ind1];
+                int M2_target = s_ind2 == DFA_INVALID_SYMBOL ? s2 : dfa_2.transition_matrix[s2][s_ind2];
                 new_transition_matrix[(s1 * num_states_2 + s2) * new_alph_size + symb_ind] =
                         (M1_target == DFA_DUMMY_SYMBOL || M2_target == DFA_DUMMY_SYMBOL) ?
                             DFA_DUMMY_SYMBOL : (M1_target * num_states_2 + M2_target);
             }
-            if (dfa_1->final_states[s1] && dfa_2->final_states[s2]) {
+            if (dfa_1.final_states.count(s1) && dfa_2.final_states.count(s2)) {
                 new_final_states[s1 * num_states_1 + s2] = true;
             }
         }
     }
 
-    err = DFA_new(dest, new_num_states, new_alph_size, 0,
-                new_final_states, *new_alphabet_symbols,
-                new_transition_matrix);
-//    std::cout << "DFA_new returned with code " << err << std::endl;
-    failure:
-    free(new_alphabet_symbols);
-    free(new_final_states);
-    free(new_transition_matrix);
-    return err;
+    DFA_constructor_helper(new_num_states, new_alph_size, 0,
+                new_final_states, new_alphabet_symbols,
+                new_transition_matrix.data());
 }
 
-void DFA_free_pattern(pattern_output_t *pattern) {
-    if (pattern == nullptr) {
-        return;
-    }
-    free(pattern->states);
-    free(pattern->symbols);
-    free(pattern);
-}
-
-void DFA_print(dfa_t *dfa, FILE *f) {
-    fprintf(f, "Num states: %d; Alphabet size %d\n", dfa->num_states, dfa->alphabet_size);
-    fprintf(f, "Initial state: %d\n", dfa->initial_state);
+void dfa::DFA_print(FILE *f) const {
+    int alphabet_size = this->alphabet_symbols.size();
+    fprintf(f, "Num states: %d; Alphabet size %d\n", this->num_states, alphabet_size);
+    fprintf(f, "Initial state: %d\n", this->initial_state);
     fprintf(f, "Final state(s): ");
-    for(int i = 0; i < dfa->num_states; i++) {
-        if (dfa->final_states[i]) fprintf(f, "%d ", i);
+    for(int state : this->final_states) {
+        fprintf(f, "%d ", state);
     }
     fprintf(f, "\nAlphabet Symbol(s): \n");
-    for(int i = 0; i < dfa->alphabet_size; i++) {
-        fprintf(f, "%d - %s\n", i, dfa->alphabet_symbols->at(i).c_str());
+    for(int i = 0; i < alphabet_size; i++) {
+        fprintf(f, "%d - %s\n", i, this->alphabet_symbols[i].c_str());
     }
     fprintf(f, "\nTransition Matrix:\n");
-    array_print(dfa->transition_matrix, dfa->num_states, dfa->alphabet_size, f);
+    vec_2d_print(this->transition_matrix, f);
 }
 
-
-int DFA_apply_symbol(dfa_t *dfa, int current_state, const std::string& symbol) {
-    if (dfa == nullptr || current_state >= dfa->num_states) {
-        return DFA_INVALID_ARG;
-    }
+int dfa::DFA_apply_symbol(int current_state, const std::string& symbol) {
+    assert(this->num_states > current_state);
     int symbol_index;
-    if ((symbol_index = get_symbol_index(dfa, symbol)) < 0) {
+    if ((symbol_index = this->get_symbol_index(symbol)) < 0) {
         return DFA_INVALID_SYMBOL;
     }
-    return dfa->transition_matrix[current_state * dfa->alphabet_size + symbol_index];
+    return this->transition_matrix[current_state][symbol_index];
+}
+
+dfa::dfa(dfa& source) {
+    this->num_states = source.num_states;
+    this->initial_state = source.initial_state;
+    this->final_states = std::set<int>(source.final_states);
+    this->alphabet_symbols = std::vector<std::string>(source.alphabet_symbols);
+    this->transition_matrix = std::vector<std::vector<int>>();
+    this->transition_matrix.resize(source.transition_matrix.size());
+    for(int i = 0; i < source.transition_matrix.size(); i++) {
+        this->transition_matrix[i] = std::vector<int>(source.transition_matrix[i]);
+    }
+}
+
+static void vec_2d_print(const std::vector<std::vector<int>>& v, FILE *f) {
+    for(const auto & i : v) {
+        for(int j : i) {
+            fprintf(f, "%d ", j);
+        }
+        fprintf(f, "\n");
+    }
 }
 
 
-int DFA_clone(dfa_t *source, dfa_t *target) {
-    target->num_states = source->num_states;
-    target->initial_state = source->initial_state;
-    target->alphabet_size = source->alphabet_size;
-    target->final_states = (bool*)malloc(source->num_states * sizeof(bool));
-    memcpy(target->final_states, source->final_states, source->num_states * sizeof(bool));
-
-    target->alphabet_symbols = new std::vector<std::string>(source->alphabet_symbols->begin(), source->alphabet_symbols->end());
-
-    target->transition_matrix = (int*)malloc((source->num_states * source->alphabet_size) * sizeof(int));
-    memcpy(target->transition_matrix, source->transition_matrix, (source->num_states * source->alphabet_size) * sizeof(int));
-    return 0;
+static bool vec_contains_duplicates(std::vector<int>& v) {
+    std::set<int> s(v.begin(), v.end());
+    return s.size() != v.size();
 }
 
+static int vec_index_of(std::vector<int>& v, int val) {
+    auto it = std::find(v.begin(), v.end(), val);
+    if (it == v.end()) return -1;
+    else return std::distance(v.begin(), it);
+}
 
-
-
-static int get_next_permutation(int *current_permutation, int length, int max_value) {
-    assert(current_permutation != nullptr);
+static int get_next_permutation(std::vector<int>& current_permutation, int max_value) {
+    int length = current_permutation.size();
 
     start_of_loop:
     for(int i = length - 1; i >= 0; i--) {
@@ -365,7 +281,7 @@ static int get_next_permutation(int *current_permutation, int length, int max_va
             current_permutation[i] = 0;
             continue;
         }
-        if (array_contains_duplicates(current_permutation, length)) {
+        if (vec_contains_duplicates(current_permutation)) {
             goto start_of_loop;
         } else {
             return 0;

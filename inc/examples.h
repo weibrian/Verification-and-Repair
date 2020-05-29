@@ -26,7 +26,7 @@
  *  @param size Number of states
  *  @return 0 on success, negative error code on failure
  */
-int ex_cycle(dfa_t *dfa, int size);
+dfa *ex_cycle(int size);
 
 /** @brief Generates a simple six state DFA
  *
@@ -50,7 +50,7 @@ int ex_cycle(dfa_t *dfa, int size);
  * @param dfa DFA to load into
  * @return 0 on success, negative error code on failure
  */
-int ex_cdm(dfa_t *dfa);
+dfa *ex_cdm();
 
 /* Patterns */
 
@@ -63,7 +63,7 @@ int ex_cdm(dfa_t *dfa);
  * @param dfa DFA to load into
  * @return 0 on success, negative error code on failure
  */
-int ex_linear(dfa_t *dfa);
+dfa *ex_linear();
 
 /** @brief Three state patter with two symbols, bidirectional
  *
@@ -74,7 +74,7 @@ int ex_linear(dfa_t *dfa);
  * @param dfa DFA to load into
  * @return 0 on success, negative error code on failure
  */
-int ex_twoway(dfa_t *dfa);
+dfa *ex_twoway();
 
 /** @brief Three state pattern with two symbols and a sink state
  *
@@ -87,16 +87,16 @@ int ex_twoway(dfa_t *dfa);
  * @param dfa DFA to load into
  * @return 0 on success, negative error code on failure
  */
-int ex_sink(dfa_t *dfa);
+dfa *ex_sink();
 
-int prop_five(dfa_t *dfa);
+dfa *prop_five();
 
-int ex_fancy(dfa_t *dfa);
+dfa *ex_fancy();
 
-int ex_infusion(dfa_t *dfa);
+dfa *ex_infusion();
 
-int ex_human(dfa_t *dfa);
+dfa *ex_human();
 
-int ex_prop(dfa_t *dfa);
+dfa *ex_prop();
 
 #endif /* __VERIF_EXAMPLES_H__ */

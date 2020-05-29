@@ -19,7 +19,7 @@
  * @param mappings Reference to mapping_list to put the pattens in
  * @return zero on success, negative error code on failure
  */
-int patternlib_init(mapping_list &mappings);
+void patternlib_init(mapping_list &mappings);
 
 #endif /* __VERIF_PATTERN_LIB_H__ */
 
