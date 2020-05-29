@@ -6,7 +6,6 @@
  */
 #include "inc/Property.h"
 #include <iostream>
-#include <unistd.h>
 #include <queue>
 #include <boost/unordered_set.hpp>
 
@@ -41,28 +40,12 @@ std::size_t hash_value(const check_state &a) {
     return seed;
 }
 
-std::function<void(int)> real_sigalarm_handler;
-void sig_alarm_handler(int sig) {
-//    std::cout << "Property check terminating via timeout" << std::endl;
-//    std::fflush(stdout);
-    real_sigalarm_handler(sig);
-}
 bool Property::property_check(dfa &M) {
-    // Attn: this code is not thread safe
     std::vector<std::string> valid_symbols = M.alphabet_symbols;
     int alphabet_size = M.alphabet_symbols.size();
     dfa *prop_dfa = this->sim_dfa;
 
     int alarm_status;
-
-    real_sigalarm_handler = [&](int sig) {
-        alarm_status = 0;
-    };
-
-    signal(SIGALRM, sig_alarm_handler);
-    alarm(1);
-    alarm_status = 1;
-
 
     std::queue<check_state*> todo_list;
     auto *first = new check_state;
@@ -75,13 +58,10 @@ bool Property::property_check(dfa &M) {
 
     bool result = true;
 
-    while(alarm_status) {
-        if (todo_list.empty()) {
-            goto cleanup;
-        }
+    while(!todo_list.empty()) {
         check_state *current = todo_list.front();
         todo_list.pop();
-
+        visited_states.insert({current->dfa_state, current->prop_state});
         for (int symb_ind = 0; symb_ind < alphabet_size; symb_ind++) {
             auto *ck = new check_state;
             ck->dfa_state = M.DFA_apply_symbol(current->dfa_state, valid_symbols[symb_ind]);
@@ -92,8 +72,7 @@ bool Property::property_check(dfa &M) {
             if (ck->dfa_state == DFA_DUMMY_SYMBOL) {
                 continue;
             } else if (this->error_states.find(ck->prop_state) != this->error_states.end()) {
-                result = false;
-                goto cleanup;
+                return false;
             } else {
                 if (visited_states.find({ck->dfa_state, ck->prop_state}) == visited_states.end()) {
                     todo_list.push(ck);
@@ -101,9 +80,5 @@ bool Property::property_check(dfa &M) {
             }
         }
     }
-
-    cleanup:
-    alarm(0);
-    signal(SIGALRM, SIG_DFL);
     return result;
 }

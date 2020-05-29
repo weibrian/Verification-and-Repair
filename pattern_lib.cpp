@@ -14,7 +14,7 @@
  * @param transitions Transition matrix for the corresponding pattern
  * @return zero on success, negative error code on failure
  */
-static dfa *patt_3state_template(int transitions[3][2]);
+static dfa *patt_3state_template(int *transitions);
 
 /** @brief Initialize a dfa with a pattern with the generic starting configuration
  *
