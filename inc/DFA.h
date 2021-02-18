@@ -17,6 +17,8 @@
 #include <vector>
 #include <set>
 
+#include <iostream>
+
 #define DFA_NO_ERROR            (0)
 #define DFA_DUMMY_SYMBOL        (-1)
 #define DFA_INVALID_ARG         (-2)
@@ -55,7 +57,7 @@ public:
     int initial_state;      /* Initial state    */
     std::set<int> final_states; /* Accepting states */
     std::vector<std::string> alphabet_symbols;  /* Symbols in the alphabet */
-    std::vector<std::vector<int>> transition_matrix; /* Transition matrix of
+    std::vector<std::vector<int> > transition_matrix; /* Transition matrix of
                 * num_states * alphabet_size where tm[i][j] is the destination
                 * from state i on transition alphabet_symbols[j] */
 

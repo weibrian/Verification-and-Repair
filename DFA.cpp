@@ -36,6 +36,7 @@ dfa::dfa(int num_states, int alphabet_size, int initial_state,
     DFA_constructor_helper(num_states, alphabet_size, initial_state,
             finals, symbols, transition_matrix);
 }
+
 void dfa::DFA_constructor_helper(int num_states, int alphabet_size, int initial_state,
         std::vector<bool>& finals, const std::vector<std::string>& symbols,
         const int *transition_matrix) {
@@ -91,7 +92,7 @@ pattern_output *dfa::DFA_find_pattern(dfa& pattern, int skip_counter) {
     main_states = this->num_states;
     main_alphabet_size = this->alphabet_symbols.size();
     pattern_alphabet_size = pattern.alphabet_symbols.size();
-
+    
     assert(pattern_states <= main_states);
 
     auto symbol_permutation = std::vector<int>(pattern_alphabet_size, 0);

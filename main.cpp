@@ -28,7 +28,7 @@ int main() {
     patternlib_init(mappings);
     std::cout << "Machine DFA has " << machine_dfa->num_states << " states" << std::endl;
 
-    int res = modify_violate_property(*human_dfa, *machine_dfa, &p, &mappings, 9999);
+    int res = modify_violate_property(*human_dfa, *machine_dfa, &p, &mappings, 9999, 2);
     if (res == MODIFY_SUCCESSFUL) {
         std::cout << ">> Modify success -- now violates property" << std::endl;
         std::cout << "Modified DFA ------------------------" << std::endl;

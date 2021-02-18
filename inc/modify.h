@@ -68,6 +68,6 @@ void modify_add_to_mappings(mapping_list &current_map, pattern_map_t &next);
  *          are found
  */
 int modify_violate_property(dfa &modification_dfa, dfa &machine_dfa, Property *p,
-        mapping_list *maps, int max_per_map);
+        mapping_list *maps, int max_per_map, int modification_depth);
 
 #endif /* __VERIF_MODIFY_H__ */
